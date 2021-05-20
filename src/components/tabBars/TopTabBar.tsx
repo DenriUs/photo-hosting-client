@@ -1,21 +1,10 @@
 import React, { useRef } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  StyleProp,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
-} from 'react-native-reanimated';
+import { StyleSheet, View, Text, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Button } from 'react-native-paper';
 
 interface IProps {
-  labels: { name: string, component: JSX.Element }[];
+  tabs: { name: string; component: JSX.Element }[];
   tabBarWidth: number;
   onTabPress?: (tabIndex: number) => void;
   tabBarStyle?: StyleProp<ViewStyle>;
@@ -29,19 +18,19 @@ const tabBarIndicatorLeft = 40;
 
 const TopTabBar = (props: IProps) => {
   const {
-    labels,
+    tabs,
     tabBarWidth,
     onTabPress,
     tabBarStyle,
     tabsWrapperStyle,
     tabButtonStyle,
     labelStyle,
-    indicatorStyle
+    indicatorStyle,
   } = props;
 
   const topTabBarRef = useRef<View>(null);
 
-  const tabButtonWidth = tabBarWidth / labels.length;
+  const tabButtonWidth = tabBarWidth / tabs.length;
   const indicatorWidth = tabButtonWidth - tabBarIndicatorLeft * 2;
 
   const indicatorLeft = useSharedValue(tabBarIndicatorLeft);
@@ -57,33 +46,32 @@ const TopTabBar = (props: IProps) => {
   const switchTab = (tabIndex: number) => {
     indicatorLeft.value = tabBarIndicatorLeft + tabButtonWidth * tabIndex;
     onTabPress && onTabPress(tabIndex);
-  }
+  };
 
-  const renderedTabs = labels.map((label, index) => (
+  const renderedTabs = tabs.map((tab, index) => (
     <Button
       key={index}
-      color='#3a2c3a'
+      color="#3a2c3a"
       uppercase={false}
       onPress={() => switchTab(index)}
       labelStyle={[styles.tabButtonLabel, labelStyle]}
-      style={[styles.tabButton, tabButtonStyle]}
-    >
-      <Text>{label.name}</Text>
+      style={[styles.tabButton, tabButtonStyle]}>
+      <Text>{tab.name}</Text>
     </Button>
   ));
 
   return (
-    <View 
-      ref={topTabBarRef}
-      style={[styles.tabBar, tabBarStyle]}
-    >
-      <View style={[styles.tabWrapper, tabsWrapperStyle]}>
-        {renderedTabs}
-      </View>
+    <View ref={topTabBarRef} style={[styles.tabBar, tabBarStyle]}>
+      <View style={[styles.tabWrapper, tabsWrapperStyle]}>{renderedTabs}</View>
       <View style={styles.indicatorWrapper}>
         <Animated.View
-          style={[styles.indicator, { width: indicatorWidth }, indicatorStyle, indicatorLeftStyle]}
-        >
+          style={[
+            styles.indicator,
+            { width: indicatorWidth },
+            indicatorStyle,
+            indicatorLeftStyle,
+          ]}
+        > 
         </Animated.View>
       </View>
     </View>
@@ -116,4 +104,3 @@ const styles = StyleSheet.create({
 });
 
 export default TopTabBar;
-

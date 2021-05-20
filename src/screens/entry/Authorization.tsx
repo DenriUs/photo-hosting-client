@@ -10,107 +10,121 @@ import {
   Image,
   Keyboard,
   ScrollView,
+  PixelRatio,
 } from 'react-native';
 import { Button } from 'react-native-paper';
 import Constants from 'expo-constants';
+import { FormikProps } from 'formik';
 import TopTabBar from '../../components/tabBars/TopTabBar';
 import LoginForm from '../../components/forms/LoginForm';
 import RegisterForm from '../../components/forms/RegisterForm';
 import ForgotPasswordForm from '../../components/forms/ForgotPasswordForm';
 import ForgotPasswordHeader from '../../components/headers/CustomHeader';
-import { getPercentagerFromNumber } from '../../helpers/calculation';
+import { getPercentagerFromNumber, normalizeHeight } from '../../helpers/calculation';
 import { appLogo } from '../../other/constants';
 
-const LOGIN_MODAL_HEIGHT = 300;
-const REGISTER_MODAL_HEIGHT = 360;
-const FORGOT_PASSWORD_MODAL_HEIGHT = 190;
+const LOGIN_MODAL_HEIGHT = 305;
+const REGISTER_MODAL_HEIGHT = 378;
+const FORGOT_PASSWORD_MODAL_HEIGHT = 185;
 
 const MODAL_ANIMATION_DURATION = 300;
 
 const loginTabName = 'Вхід';
 const registerTabName = 'Реєстрація';
-const submitForgotPasswordBtnName = 'Відправити код';
 
-const topTabBarLabels = [
-  { name: loginTabName, component: <LoginForm /> },
-  { name: registerTabName, component: <RegisterForm /> },
-];
+const loginSubmitName = 'Увійти';
+const registerSubmitName = 'Зареєструватися';
+const forgotPassowrdSubmitName = 'Відправити код'
 
 const Authorization = () => {
+  const [isReady, setIsReady] = useState(false);
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const [modalOffset, setModalOffset] = useState(0);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
 
-  const modalHeight = useRef(
-    new Animated.Value(currentTabIndex === 0 ? LOGIN_MODAL_HEIGHT : REGISTER_MODAL_HEIGHT)
-  ).current;
-
+  const formikRef = useRef<FormikProps<{}>>(null);
+  
   const { width, height } = useWindowDimensions();
 
   const modalWidth = width * 0.9;
   const distanceFromModalToStatusBar = getPercentagerFromNumber(height, 30);
 
-  const runLoginModalAnimation = (): void => {
-    Animated.timing(modalHeight, {
-        toValue: LOGIN_MODAL_HEIGHT,
-        duration: MODAL_ANIMATION_DURATION,
-        useNativeDriver: false,
-      },
-    ).start();
-  }
+  const fontScale = PixelRatio.getFontScale();
 
-  const runRegisteModalAnimation = (): void => {
-    Animated.timing(modalHeight, {
-        toValue: REGISTER_MODAL_HEIGHT,
-        duration: MODAL_ANIMATION_DURATION,
-        useNativeDriver: false,
-      },
-    ).start();
-  }
+  const normalizedLoginHeight = normalizeHeight(LOGIN_MODAL_HEIGHT, fontScale);
+  const normalizedRegisterHeight = normalizeHeight(REGISTER_MODAL_HEIGHT, fontScale);
+  const normalizedForgotPasswordHeight = normalizeHeight(FORGOT_PASSWORD_MODAL_HEIGHT, fontScale);
 
-  const runForgotModalAnimation = (): void => {
-    Animated.timing(modalHeight, {
-        toValue: FORGOT_PASSWORD_MODAL_HEIGHT,
-        duration: MODAL_ANIMATION_DURATION,
-        useNativeDriver: false,
-      },
-    ).start();
-  }
+  const modalHeight = useRef(
+    new Animated.Value(currentTabIndex === 0 ? normalizedLoginHeight : normalizedRegisterHeight)
+  ).current;
 
-  const onTabPress = (tabIndex: number): void => {
+  const runModalHeightAnimation = (
+    height: number,
+    duration: number = MODAL_ANIMATION_DURATION,
+  ) => {
+    Animated.timing(modalHeight, {
+      toValue: height,
+      duration,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const onTabPress = (tabIndex: number) => {
     topTabBarLabels[tabIndex].name === loginTabName
-    ? runLoginModalAnimation()
-    : runRegisteModalAnimation();
+      ? runModalHeightAnimation(normalizedLoginHeight)
+      : runModalHeightAnimation(normalizedRegisterHeight);
     setCurrentTabIndex(tabIndex);
-  }
+  };
 
   const onBackActionPress = () => {
-    runLoginModalAnimation();
+    runModalHeightAnimation(normalizedLoginHeight);
     setIsForgotPassword(false);
-  }
+  };
 
   const onForgoPasswordPress = () => {
-    runForgotModalAnimation();
+    runModalHeightAnimation(normalizedForgotPasswordHeight);
     setIsForgotPassword(true);
+  };
+
+  const onLoginSubmit = () => {
+    console.log('login submitted!');
   }
 
+  const onRegisterSubmit = () => {
+    console.log('register submitted!');
+  }
+
+  const onForgotPasswordSubmit = () => {
+    console.log('forgot password submitted!');
+  }
+
+  const topTabBarLabels = [
+    {
+      name: loginTabName,
+      component: <LoginForm ref={formikRef} onSubmit={onLoginSubmit} />
+    },
+    {
+      name: registerTabName,
+      component: <RegisterForm ref={formikRef} onSubmit={onRegisterSubmit} />
+    },
+  ];
+
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      (event) => {
-        const scrollViewOffset = getPercentagerFromNumber(height, 7.2);
-        const openedKeyboardScreenHeight = Constants.statusBarHeight +
+    setIsReady(true);
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
+      const scrollViewOffset = getPercentagerFromNumber(height, 7.2);
+      const openedKeyboardScreenHeight =
+        Constants.statusBarHeight +
         distanceFromModalToStatusBar +
         (modalHeight as any)._value +
         event.endCoordinates.height +
         scrollViewOffset;
-        const calculatedOffset = height - openedKeyboardScreenHeight;
-        setModalOffset(calculatedOffset < 0 ? calculatedOffset : 0);
-      }
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => setModalOffset(0),
+      const calculatedOffset = height - openedKeyboardScreenHeight;
+      setModalOffset(calculatedOffset < 0 ? calculatedOffset : 0);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () =>
+      setModalOffset(0)
     );
 
     return () => {
@@ -119,34 +133,34 @@ const Authorization = () => {
     };
   }, []);
 
-  return (
+  return !isReady? (
+    <View style={{ flex: 1, backgroundColor: 'black' }}></View>
+  ) : (
     <SafeAreaView style={styles.flex}>
       <StatusBar backgroundColor='#f5e0ce' barStyle='dark-content' />
       <View style={{ width, height, ...styles.backgroundContainer }}>
         <View style={styles.backroundHeaderContainer}>
           <Image source={appLogo} />
         </View>
-        <View style={styles.backgroundBodyContainer}>
-        </View>
+        <View style={styles.backgroundBodyContainer}></View>
       </View>
       <View style={styles.flex}>
         <ScrollView
           keyboardShouldPersistTaps='always'
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollViewContainer}
-        >
+          contentContainerStyle={styles.scrollViewContainer}>
           <View style={{ height: distanceFromModalToStatusBar + modalOffset }}></View>
           <Animated.View style={{ width: modalWidth, height: modalHeight, ...styles.modal }}>
-            {!isForgotPassword && (
-              <TopTabBar
-                labels={topTabBarLabels}
-                tabBarWidth={modalWidth}
-                onTabPress={onTabPress}
-                tabBarStyle={styles.tabBar}
-              />
-            )}
             {!isForgotPassword ? (
-              topTabBarLabels[currentTabIndex].component
+              <>
+                <TopTabBar
+                  tabs={topTabBarLabels}
+                  tabBarWidth={modalWidth}
+                  onTabPress={onTabPress}
+                  tabBarStyle={{ marginBottom: fontScale > 1 ? 0 : 12 }}
+                />
+                {topTabBarLabels[currentTabIndex].component}
+              </>
             ) : (
               <>
                 <ForgotPasswordHeader
@@ -154,19 +168,24 @@ const Authorization = () => {
                   backActionIcon='chevron-left'
                   onBackActionPress={onBackActionPress}
                 />
-                <ForgotPasswordForm />
+                <ForgotPasswordForm ref={formikRef} onSubmit={onForgotPasswordSubmit} />
               </>
             )}
             {topTabBarLabels[currentTabIndex].name === loginTabName && !isForgotPassword && (
-              <View style={styles.forgotPasswordButtonWrapper}>
+              <View
+                style={{
+                  ...styles.forgotPasswordButtonWrapper,
+                }}
+              >
                 <Button
                   uppercase={false}
                   compact={true}
                   color='#3a2c3a'
-                  contentStyle={styles.forgotPasswordButtonContent}
+                  contentStyle={{ height: normalizeHeight(20, fontScale) }}
                   labelStyle={styles.forgotPasswordButtonLabel}
                   onPress={onForgoPasswordPress}
-                  >
+                  style={{ marginTop: 12 }}
+                >
                   <Text>Забули пароль?</Text>
                 </Button>
               </View>
@@ -174,19 +193,16 @@ const Authorization = () => {
           </Animated.View>
           <View style={styles.submitButtonWrapper}>
             <Button
-              mode='contained' 
-              color='#3a2c3a' 
+              mode='contained'
+              color='#3a2c3a'
               uppercase={false}
-              onPress={() => console.log('Submited!')}
+              onPress={() => formikRef.current && formikRef.current.submitForm()}
               labelStyle={styles.submitButtonLabel}
-              style={styles.submitButton}
-            >
+              style={styles.submitButton}>
               <Text>
-                {
-                  isForgotPassword
-                  ? submitForgotPasswordBtnName
-                  : topTabBarLabels[currentTabIndex].name
-                }
+                {isForgotPassword
+                  ? forgotPassowrdSubmitName
+                  : currentTabIndex === 0 ? loginSubmitName : registerSubmitName}
               </Text>
             </Button>
           </View>
@@ -224,15 +240,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     elevation: 6,
   },
-  tabBar: {
-    marginBottom: 12,
-  },
   forgotPasswordButtonWrapper: {
+    position: 'relative',
     width: '90%',
     alignItems: 'flex-end',
-  },
-  forgotPasswordButtonContent: {
-    height: 20,
+    marginTop: 0,
   },
   forgotPasswordButtonLabel: {
     fontSize: 13.3,
@@ -242,7 +254,7 @@ const styles = StyleSheet.create({
     width: '65%',
     alignItems: 'center',
     top: -30,
-    marginBottom: -20,
+    marginBottom: -15,
     borderWidth: 3,
     borderRadius: 26,
     borderColor: '#ffffff',

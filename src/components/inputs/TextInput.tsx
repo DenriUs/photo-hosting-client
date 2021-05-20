@@ -2,6 +2,7 @@ import React, { RefObject, useRef } from 'react';
 import {
   StyleSheet,
   View,
+  Text,
   StyleProp,
   ViewStyle,
   TextStyle,
@@ -14,71 +15,83 @@ interface IProps {
   placeholder?: string;
   placeholderTextColor?: string;
   label?: string;
+  subLabel?: string;
   value?: string;
   selectionColor?: string;
   left?: JSX.Element;
   right?: JSX.Element;
   wrapperOnLeftPress?: (
     event: GestureResponderEvent,
-    textInputRef: RefObject<RNTextInput>,
+    textInputRef: RefObject<RNTextInput>
   ) => void;
   wrapperOnRightPress?: (
     event: GestureResponderEvent,
-    textInputRef: RefObject<RNTextInput>,
+    textInputRef: RefObject<RNTextInput>
   ) => void;
   secureTextEntry?: boolean;
+  hasError?: boolean;
+  errorColor?: string;
+  componentWrapperStyle?: StyleProp<ViewStyle>;
   wrapperStyle?: StyleProp<ViewStyle>;
   style?: StyleProp<ViewStyle>;
   labelWrapperStyle?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
-  onChangeText?: () => void;
+  subLabelWrapperStyle?: StyleProp<ViewStyle>;
+  subLabelStyle?: StyleProp<TextStyle>;
+  onChangeText?: (text: string) => void;
 }
 
 const defaultPlaceholderTextColor = '#000000';
 const defaultSelectionColor = '#000000';
+const defaultErrorColor = '#f7623c';
 
 const TextInput = (props: IProps) => {
   const {
     placeholder,
     placeholderTextColor,
     label,
+    subLabel,
     value,
     selectionColor,
     left,
     right,
     wrapperOnLeftPress,
     wrapperOnRightPress,
+    hasError,
+    errorColor,
     secureTextEntry,
     wrapperStyle,
+    componentWrapperStyle,
     style,
     labelWrapperStyle,
     labelStyle,
+    subLabelWrapperStyle,
+    subLabelStyle,
     onChangeText,
   } = props;
 
   const textInputRef = useRef<RNTextInput>(null);
 
   return (
-    <>
+    <View style={componentWrapperStyle}>
       {label && (
         <View style={labelWrapperStyle}>
           <Title style={labelStyle}>{label}</Title>
         </View>
       )}
       <View
-        style={[styles.textInputWrapper, wrapperStyle]}
+        style={[
+          styles.textInputWrapper,
+          wrapperStyle,
+          hasError && { borderColor: errorColor || defaultErrorColor },
+        ]}
       >
         {left && (
           <View
-            {...wrapperOnLeftPress &&
-              {
-                onTouchEnd: (
-                  event: GestureResponderEvent
-                ) => wrapperOnLeftPress(event, textInputRef),
-              }
-            }
-            style={styles.sideWrapper}
-          >
+            {...(wrapperOnLeftPress && {
+              onTouchEnd: (event: GestureResponderEvent) => wrapperOnLeftPress(event, textInputRef),
+            })}
+            style={styles.sideWrapper}>
             {left}
           </View>
         )}
@@ -88,26 +101,27 @@ const TextInput = (props: IProps) => {
           selectionColor={selectionColor || defaultSelectionColor}
           value={value}
           secureTextEntry={secureTextEntry || false}
-          {...onChangeText && onChangeText}
+          {...(onChangeText && { onChangeText })}
           ref={textInputRef}
           style={[styles.textInput, style]}
         />
         {right && (
           <View
-            {...wrapperOnRightPress &&
-              {
-                onTouchEnd: (
-                  event: GestureResponderEvent
-                ) => wrapperOnRightPress(event, textInputRef),
-              }
-            }
+            {...(wrapperOnRightPress && {
+              onTouchEnd: (event: GestureResponderEvent) => wrapperOnRightPress(event, textInputRef),
+            })}
             style={styles.sideWrapper}
           >
             {right}
           </View>
         )}
       </View>
-    </>
+      {subLabel && (
+        <View style={subLabelWrapperStyle}>
+          <Text style={subLabelStyle}>{subLabel}</Text>
+        </View>
+      )}
+    </View>
   );
 };
 

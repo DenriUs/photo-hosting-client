@@ -9,7 +9,7 @@ const appNavigatorScreenOptions = { headerShown: false };
 const AppNavigator = () => (
   <NavigationContainer>
     <AppStack.Navigator screenOptions={appNavigatorScreenOptions}>
-      <AppStack.Screen name='Authorization' component={Authorization} />
+      <AppStack.Screen name="Authorization" component={Authorization} />
     </AppStack.Navigator>
   </NavigationContainer>
 );
