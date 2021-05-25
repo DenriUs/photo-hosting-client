@@ -39,7 +39,7 @@ interface IProps {
   subLabelWrapperStyle?: StyleProp<ViewStyle>;
   subLabelStyle?: StyleProp<TextStyle>;
   onChangeText?: (text: string) => void;
-}
+};
 
 const defaultPlaceholderTextColor = '#000000';
 const defaultSelectionColor = '#000000';

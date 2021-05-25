@@ -2,14 +2,23 @@ import React, { forwardRef, RefObject, useState, useImperativeHandle } from 'rea
 import { StyleSheet, View, GestureResponderEvent, TextInput as RNTextInput } from 'react-native';
 import { MaterialIcons as MaterialIcon } from '@expo/vector-icons';
 import { IconButton } from 'react-native-paper';
-import {  useFormik } from 'formik';
+import {  FormikHelpers, useFormik } from 'formik';
 import TextInput from '../inputs/TextInput';
 import { FORM_ICON_SIZE } from '../../other/constants';
 import { loginSchema } from '../../other/formValidationSchemas';
 
 interface IProps {
-  onSubmit: () => void;
-}
+  onSubmit: (
+    values: {
+      login: string;
+      password: string;
+    },
+    formikHelpers: FormikHelpers<{
+      login: string;
+      password: string;
+    }>,
+  ) => void | Promise<void>;
+};
 
 const LoginForm = forwardRef((props: IProps, ref: any) => {
   const [isPasswordHidden, setIsPasswordHidden] = useState(true);

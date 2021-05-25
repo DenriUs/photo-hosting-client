@@ -9,7 +9,7 @@ import { registerSchema } from '../../other/formValidationSchemas';
 
 interface IProps {
   onSubmit: () => void
-}
+};
 
 const RegisterForm = forwardRef((props: IProps, ref: any) => {
   const [isPasswordHidden, setIsPasswordHidden] = useState(true);

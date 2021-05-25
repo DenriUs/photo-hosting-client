@@ -10,9 +10,9 @@ interface IProps {
   title?: string;
   backActionIcon?: string;
   onBackActionPress?: () => void;
-}
+};
 
-const ForgotPasswordHeader = (props: IProps) => {
+const CustomHeader = (props: IProps) => {
   const {
     title,
     backActionIcon,
@@ -60,5 +60,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ForgotPasswordHeader;
+export default CustomHeader;
 

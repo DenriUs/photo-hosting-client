@@ -14,14 +14,17 @@ import {
 } from 'react-native';
 import { Button } from 'react-native-paper';
 import Constants from 'expo-constants';
-import { FormikProps } from 'formik';
+import { FormikHelpers, FormikProps } from 'formik';
 import TopTabBar from '../../components/tabBars/TopTabBar';
 import LoginForm from '../../components/forms/LoginForm';
 import RegisterForm from '../../components/forms/RegisterForm';
 import ForgotPasswordForm from '../../components/forms/ForgotPasswordForm';
-import ForgotPasswordHeader from '../../components/headers/CustomHeader';
+import CustomHeader from '../../components/headers/CustomHeader';
 import { getPercentagerFromNumber, normalizeHeight } from '../../helpers/calculation';
-import { appLogo } from '../../other/constants';
+import { appLogo, jwtAsyncStorageKeyName } from '../../other/constants';
+import { AxiosHelper } from '../../helpers/api';
+import { checkAuthStatus, loginAccount } from '../../api/requests/authorization';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LOGIN_MODAL_HEIGHT = 305;
 const REGISTER_MODAL_HEIGHT = 378;
@@ -34,13 +37,20 @@ const registerTabName = 'Реєстрація';
 
 const loginSubmitName = 'Увійти';
 const registerSubmitName = 'Зареєструватися';
-const forgotPassowrdSubmitName = 'Відправити код'
+const forgotPassowrdSubmitName = 'Відправити код';
 
-const Authorization = () => {
-  const [isReady, setIsReady] = useState(false);
+interface IProps {
+  navigation: any;
+}
+
+const Authorization = (props: IProps) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorText, setErrorText] = useState('');
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const [modalOffset, setModalOffset] = useState(0);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+
+  const { navigation } = props;
 
   const formikRef = useRef<FormikProps<{}>>(null);
   
@@ -87,17 +97,35 @@ const Authorization = () => {
     setIsForgotPassword(true);
   };
 
-  const onLoginSubmit = () => {
-    console.log('login submitted!');
+  const onLoginSubmit = async (
+    values: {
+      login: string;
+      password: string;
+    },
+    formikHelpers: FormikHelpers<{
+      login: string;
+      password: string;
+    }>,
+  ) => {
+    const { login, password } = values;
+    const response = await loginAccount(login, password);
+    if (response.error) {
+      setErrorText(response.error);
+      console.log(errorText);
+      return;
+    }
+    setErrorText('');
+    formikHelpers.resetForm();
+    navigation.navigate('Main');
   }
 
   const onRegisterSubmit = () => {
     console.log('register submitted!');
-  }
+  };
 
   const onForgotPasswordSubmit = () => {
     console.log('forgot password submitted!');
-  }
+  };
 
   const topTabBarLabels = [
     {
@@ -111,7 +139,16 @@ const Authorization = () => {
   ];
 
   useEffect(() => {
-    setIsReady(true);
+    (async () => {
+      await AxiosHelper.updateAxiosInstance();
+      const response = await checkAuthStatus();
+      setIsLoading(false);
+      if (response.error) {
+        return;
+      }
+      navigation.navigate('Main');
+    })();
+
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
       const scrollViewOffset = getPercentagerFromNumber(height, 7.2);
       const openedKeyboardScreenHeight =
@@ -133,8 +170,10 @@ const Authorization = () => {
     };
   }, []);
 
-  return !isReady? (
-    <View style={{ flex: 1, backgroundColor: 'black' }}></View>
+  return isLoading ? (
+    <View style={[styles.flex, styles.loadingContainer]}>
+      <StatusBar backgroundColor='#ffffff' barStyle='dark-content' />
+    </View>
   ) : (
     <SafeAreaView style={styles.flex}>
       <StatusBar backgroundColor='#f5e0ce' barStyle='dark-content' />
@@ -163,7 +202,7 @@ const Authorization = () => {
               </>
             ) : (
               <>
-                <ForgotPasswordHeader
+                <CustomHeader
                   title='Відновлення паролю'
                   backActionIcon='chevron-left'
                   onBackActionPress={onBackActionPress}
@@ -215,6 +254,9 @@ const Authorization = () => {
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
+  },
+  loadingContainer: {
+    backgroundColor: '#ffffff',
   },
   backgroundContainer: {
     position: 'absolute',

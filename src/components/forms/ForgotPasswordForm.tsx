@@ -8,7 +8,7 @@ import { frogotPasswordSchema } from '../../other/formValidationSchemas';
 
 interface IProps {
   onSubmit: () => void
-}
+};
 
 const ForgotPasswordForm = forwardRef((props: IProps, ref: any) => {
   const { onSubmit } = props;

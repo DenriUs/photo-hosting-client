@@ -12,7 +12,7 @@ interface IProps {
   tabButtonStyle?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
   indicatorStyle?: StyleProp<ViewStyle>;
-}
+};
 
 const tabBarIndicatorLeft = 40;
 
