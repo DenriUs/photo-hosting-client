@@ -26,7 +26,7 @@ const CustomHeader = (props: IProps) => {
           icon={backActionIcon}
           size={FORM_ICON_SIZE + 5}
           color='#3a2c3a'
-          onPress={onBackActionPress}
+          {...onBackActionPress && { onPress: onBackActionPress }}
           style={styles.backActionIcon}
         />
       )}

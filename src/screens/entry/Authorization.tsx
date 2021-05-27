@@ -21,10 +21,11 @@ import RegisterForm from '../../components/forms/RegisterForm';
 import ForgotPasswordForm from '../../components/forms/ForgotPasswordForm';
 import CustomHeader from '../../components/headers/CustomHeader';
 import { getPercentagerFromNumber, normalizeHeight } from '../../helpers/calculation';
-import { appLogo, jwtAsyncStorageKeyName } from '../../other/constants';
+import { appLogo } from '../../other/constants';
 import { AxiosHelper } from '../../helpers/api';
 import { checkAuthStatus, loginAccount } from '../../api/requests/authorization';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import SuccessModal from '../../components/modals/SuccessModal';
+import ErrorModal from '../../components/modals/ErrorModal';
 
 const LOGIN_MODAL_HEIGHT = 305;
 const REGISTER_MODAL_HEIGHT = 378;
@@ -45,6 +46,8 @@ interface IProps {
 
 const Authorization = (props: IProps) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
   const [errorText, setErrorText] = useState('');
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const [modalOffset, setModalOffset] = useState(0);
@@ -111,7 +114,6 @@ const Authorization = (props: IProps) => {
     const response = await loginAccount(login, password);
     if (response.error) {
       setErrorText(response.error);
-      console.log(errorText);
       return;
     }
     setErrorText('');
@@ -144,6 +146,9 @@ const Authorization = (props: IProps) => {
       const response = await checkAuthStatus();
       setIsLoading(false);
       if (response.error) {
+        if (response.isServerError) {
+          setIsErrorModalVisible(true);
+        }
         return;
       }
       navigation.navigate('Main');
@@ -177,6 +182,16 @@ const Authorization = (props: IProps) => {
   ) : (
     <SafeAreaView style={styles.flex}>
       <StatusBar backgroundColor='#f5e0ce' barStyle='dark-content' />
+      <SuccessModal
+        isVisible={isSuccessModalVisible}
+        onBackdropPress={() => setIsSuccessModalVisible(false)}
+        onCloseButtonPress={() => setIsSuccessModalVisible(false)}
+      />
+      <ErrorModal
+        isVisible={isErrorModalVisible}
+        onBackdropPress={() => setIsErrorModalVisible(false)}
+        onCloseButtonPress={() => setIsErrorModalVisible(false)} 
+      />
       <View style={{ width, height, ...styles.backgroundContainer }}>
         <View style={styles.backroundHeaderContainer}>
           <Image source={appLogo} />
@@ -223,7 +238,7 @@ const Authorization = (props: IProps) => {
                   contentStyle={{ height: normalizeHeight(20, fontScale) }}
                   labelStyle={styles.forgotPasswordButtonLabel}
                   onPress={onForgoPasswordPress}
-                  style={{ marginTop: 12 }}
+                  style={styles.forgotPasswordButton}
                 >
                   <Text>Забули пароль?</Text>
                 </Button>
@@ -291,6 +306,9 @@ const styles = StyleSheet.create({
   forgotPasswordButtonLabel: {
     fontSize: 13.3,
     letterSpacing: 0,
+  },
+  forgotPasswordButton: {
+    marginTop: 12,
   },
   submitButtonWrapper: {
     width: '65%',

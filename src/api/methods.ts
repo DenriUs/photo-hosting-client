@@ -6,6 +6,8 @@ enum Methods {
   POST = 'POST',
 };
 
+const httpServerErrorFirstDigit = 5;
+
 const sendRequest = async (
   method: Methods,
   endpoint: string,
@@ -13,10 +15,13 @@ const sendRequest = async (
 ): Promise<ServerResponse> => {
   const axiosInstance = await AxiosHelper.getAxiosInstance();
   try {
-    const responseData = (await axiosInstance.request({method, url: endpoint, data})).data;
-    return { data: responseData };
+    const response = await axiosInstance.request({method, url: endpoint, data});
+    return { data: response.data };
   } catch (error) {
-    return { error: error.response.data.message || error.response.data };
+    return {
+      error: error.response.data.message || error.response.data,
+      isServerError: Math.floor(error.response.status / 100) === httpServerErrorFirstDigit,
+    };
   }
 };
 

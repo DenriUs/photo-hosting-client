@@ -88,9 +88,9 @@ const TextInput = (props: IProps) => {
       >
         {left && (
           <View
-            {...(wrapperOnLeftPress && {
+            {...wrapperOnLeftPress && {
               onTouchEnd: (event: GestureResponderEvent) => wrapperOnLeftPress(event, textInputRef),
-            })}
+            }}
             style={styles.sideWrapper}>
             {left}
           </View>
@@ -101,15 +101,15 @@ const TextInput = (props: IProps) => {
           selectionColor={selectionColor || defaultSelectionColor}
           value={value}
           secureTextEntry={secureTextEntry || false}
-          {...(onChangeText && { onChangeText })}
+          {...onChangeText && { onChangeText }}
           ref={textInputRef}
           style={[styles.textInput, style]}
         />
         {right && (
           <View
-            {...(wrapperOnRightPress && {
+            {...wrapperOnRightPress && {
               onTouchEnd: (event: GestureResponderEvent) => wrapperOnRightPress(event, textInputRef),
-            })}
+            }}
             style={styles.sideWrapper}
           >
             {right}
