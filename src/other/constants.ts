@@ -17,4 +17,4 @@ const axiosTimeoutSeconds = 20;
 export const mainAxiosRequestConfig: AxiosRequestConfig = {
   baseURL: serverURL,
   timeout: axiosTimeoutSeconds * 1000,
-}
+};

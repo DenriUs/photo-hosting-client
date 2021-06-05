@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -22,10 +22,14 @@ import ForgotPasswordForm from '../../components/forms/ForgotPasswordForm';
 import CustomHeader from '../../components/headers/CustomHeader';
 import { getPercentagerFromNumber, normalizeHeight } from '../../helpers/calculation';
 import { appLogo } from '../../other/constants';
-import { AxiosHelper } from '../../helpers/api';
 import { checkAuthStatus, loginAccount } from '../../api/requests/authorization';
 import SuccessModal from '../../components/modals/SuccessModal';
 import ErrorModal from '../../components/modals/ErrorModal';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import { AxiosHelper } from '../../helpers/api';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { cleanErrors } from '../../redux/slices/authSlice';
 
 const LOGIN_MODAL_HEIGHT = 305;
 const REGISTER_MODAL_HEIGHT = 378;
@@ -40,23 +44,20 @@ const loginSubmitName = 'Увійти';
 const registerSubmitName = 'Зареєструватися';
 const forgotPassowrdSubmitName = 'Відправити код';
 
-interface IProps {
-  navigation: any;
-}
-
-const Authorization = (props: IProps) => {
-  const [isLoading, setIsLoading] = useState(true);
+const Authorization = () => {
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
-  const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
   const [errorText, setErrorText] = useState('');
   const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const [modalOffset, setModalOffset] = useState(0);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
 
-  const { navigation } = props;
+  const authState = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+
+  const navigation = useNavigation();
 
   const formikRef = useRef<FormikProps<{}>>(null);
-  
+
   const { width, height } = useWindowDimensions();
 
   const modalWidth = width * 0.9;
@@ -72,10 +73,7 @@ const Authorization = (props: IProps) => {
     new Animated.Value(currentTabIndex === 0 ? normalizedLoginHeight : normalizedRegisterHeight)
   ).current;
 
-  const runModalHeightAnimation = (
-    height: number,
-    duration: number = MODAL_ANIMATION_DURATION,
-  ) => {
+  const runModalHeightAnimation = (height: number, duration: number = MODAL_ANIMATION_DURATION) => {
     Animated.timing(modalHeight, {
       toValue: height,
       duration,
@@ -100,26 +98,11 @@ const Authorization = (props: IProps) => {
     setIsForgotPassword(true);
   };
 
-  const onLoginSubmit = async (
-    values: {
-      login: string;
-      password: string;
-    },
-    formikHelpers: FormikHelpers<{
-      login: string;
-      password: string;
-    }>,
-  ) => {
-    const { login, password } = values;
-    const response = await loginAccount(login, password);
-    if (response.error) {
-      setErrorText(response.error);
-      return;
-    }
-    setErrorText('');
-    formikHelpers.resetForm();
-    navigation.navigate('Main');
-  }
+  const toggleSuccessModal = () => setIsSuccessModalVisible(!setIsSuccessModalVisible);
+
+  const onLoginSubmit = async (values: { login: string; password: string }) => {
+    dispatch(loginAccount(values));
+  };
 
   const onRegisterSubmit = () => {
     console.log('register submitted!');
@@ -132,26 +115,24 @@ const Authorization = (props: IProps) => {
   const topTabBarLabels = [
     {
       name: loginTabName,
-      component: <LoginForm ref={formikRef} onSubmit={onLoginSubmit} />
+      component: <LoginForm ref={formikRef} onSubmit={onLoginSubmit} />,
     },
     {
       name: registerTabName,
-      component: <RegisterForm ref={formikRef} onSubmit={onRegisterSubmit} />
+      component: <RegisterForm ref={formikRef} onSubmit={onRegisterSubmit} />,
     },
   ];
 
   useEffect(() => {
+    if (authState.error.message) {
+      setErrorText(authState.error.message);
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
     (async () => {
       await AxiosHelper.updateAxiosInstance();
-      const response = await checkAuthStatus();
-      setIsLoading(false);
-      if (response.error) {
-        if (response.isServerError) {
-          setIsErrorModalVisible(true);
-        }
-        return;
-      }
-      navigation.navigate('Main');
+      dispatch(checkAuthStatus());
     })();
 
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
@@ -175,22 +156,29 @@ const Authorization = (props: IProps) => {
     };
   }, []);
 
-  return isLoading ? (
-    <View style={[styles.flex, styles.loadingContainer]}>
-      <StatusBar backgroundColor='#ffffff' barStyle='dark-content' />
-    </View>
-  ) : (
+  if (authState.loading) {
+    return (
+      <View style={[styles.flex, styles.loadingContainer]}>
+        <StatusBar backgroundColor="#ffffff" barStyle="dark-content" />
+        <LottieView source={require('../../../assets/lottie/loading.json')} autoPlay loop />
+      </View>
+    );
+  }
+
+  return (
     <SafeAreaView style={styles.flex}>
-      <StatusBar backgroundColor='#f5e0ce' barStyle='dark-content' />
+      <StatusBar backgroundColor="#f5e0ce" barStyle="dark-content" />
       <SuccessModal
         isVisible={isSuccessModalVisible}
-        onBackdropPress={() => setIsSuccessModalVisible(false)}
-        onCloseButtonPress={() => setIsSuccessModalVisible(false)}
+        text="Обліковий запис зареєстровано успішно."
+        onBackdropPress={toggleSuccessModal}
+        onCloseButtonPress={toggleSuccessModal}
       />
       <ErrorModal
-        isVisible={isErrorModalVisible}
-        onBackdropPress={() => setIsErrorModalVisible(false)}
-        onCloseButtonPress={() => setIsErrorModalVisible(false)} 
+        isVisible={authState.error.isServerError}
+        text="Нам дуже шкода, але сталася невідома помилка."
+        onBackdropPress={() => dispatch(cleanErrors())}
+        onCloseButtonPress={() => dispatch(cleanErrors())}
       />
       <View style={{ width, height, ...styles.backgroundContainer }}>
         <View style={styles.backroundHeaderContainer}>
@@ -200,7 +188,7 @@ const Authorization = (props: IProps) => {
       </View>
       <View style={styles.flex}>
         <ScrollView
-          keyboardShouldPersistTaps='always'
+          keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollViewContainer}>
           <View style={{ height: distanceFromModalToStatusBar + modalOffset }}></View>
@@ -218,8 +206,8 @@ const Authorization = (props: IProps) => {
             ) : (
               <>
                 <CustomHeader
-                  title='Відновлення паролю'
-                  backActionIcon='chevron-left'
+                  title="Відновлення паролю"
+                  backActionIcon="chevron-left"
                   onBackActionPress={onBackActionPress}
                 />
                 <ForgotPasswordForm ref={formikRef} onSubmit={onForgotPasswordSubmit} />
@@ -229,17 +217,15 @@ const Authorization = (props: IProps) => {
               <View
                 style={{
                   ...styles.forgotPasswordButtonWrapper,
-                }}
-              >
+                }}>
                 <Button
                   uppercase={false}
                   compact={true}
-                  color='#3a2c3a'
+                  color="#3a2c3a"
                   contentStyle={{ height: normalizeHeight(20, fontScale) }}
                   labelStyle={styles.forgotPasswordButtonLabel}
                   onPress={onForgoPasswordPress}
-                  style={styles.forgotPasswordButton}
-                >
+                  style={styles.forgotPasswordButton}>
                   <Text>Забули пароль?</Text>
                 </Button>
               </View>
@@ -247,16 +233,21 @@ const Authorization = (props: IProps) => {
           </Animated.View>
           <View style={styles.submitButtonWrapper}>
             <Button
-              mode='contained'
-              color='#3a2c3a'
+              mode="contained"
+              color="#3a2c3a"
               uppercase={false}
-              onPress={() => formikRef.current && formikRef.current.submitForm()}
+              onPress={() => {
+                setIsSuccessModalVisible(true);
+                formikRef.current && formikRef.current.submitForm();
+              }}
               labelStyle={styles.submitButtonLabel}
               style={styles.submitButton}>
               <Text>
                 {isForgotPassword
                   ? forgotPassowrdSubmitName
-                  : currentTabIndex === 0 ? loginSubmitName : registerSubmitName}
+                  : currentTabIndex === 0
+                  ? loginSubmitName
+                  : registerSubmitName}
               </Text>
             </Button>
           </View>
@@ -271,6 +262,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: '#ffffff',
   },
   backgroundContainer: {

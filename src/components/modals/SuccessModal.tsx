@@ -5,7 +5,7 @@ import CustomModal from './CustomModal';
 import { MODAL_ICON_SIZE, MODAL_ICON_SUCCESS_COLOR } from '../../other/constants';
 
 interface IProps {
-  isVisible: boolean;
+  isVisible?: boolean;
   text?: string;
   onBackdropPress?: () => void;
   onCloseButtonPress?: () => void;
@@ -26,11 +26,13 @@ const SuccessModal = (props: IProps) => {
         />
       }
       title='Успіх!'
+      {...text && { text }}
       animationIn='lightSpeedIn'
       animationOut='fadeOut'
       {...text && { text }}
       {...onBackdropPress && { onBackdropPress }}
       {...onCloseButtonPress && { onCloseButtonPress }}
+      titleStyle={style.title}
     />
   );
 };

@@ -14,6 +14,8 @@ interface IProps {
   indicatorStyle?: StyleProp<ViewStyle>;
 };
 
+const INDICATOR_ANIMATION_DURATION = 100;
+
 const tabBarIndicatorLeft = 40;
 
 const TopTabBar = (props: IProps) => {
@@ -33,18 +35,18 @@ const TopTabBar = (props: IProps) => {
   const tabButtonWidth = tabBarWidth / tabs.length;
   const indicatorWidth = tabButtonWidth - tabBarIndicatorLeft * 2;
 
-  const indicatorLeft = useSharedValue(tabBarIndicatorLeft);
+  const indicatorX = useSharedValue(tabBarIndicatorLeft);
 
   const indicatorLeftStyle = useAnimatedStyle(() => {
     return {
-      left: withTiming(indicatorLeft.value, {
-        duration: 100,
-      }),
+      transform: [{
+        translateX: withTiming(indicatorX.value, { duration: INDICATOR_ANIMATION_DURATION }),
+      }]
     };
   });
 
   const switchTab = (tabIndex: number) => {
-    indicatorLeft.value = tabBarIndicatorLeft + tabButtonWidth * tabIndex;
+    indicatorX.value = tabBarIndicatorLeft + tabButtonWidth * tabIndex;
     onTabPress && onTabPress(tabIndex);
   };
 

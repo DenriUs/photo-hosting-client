@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import AppLoading from 'expo-app-loading';
 import { Asset } from 'expo-asset';
+import { Provider } from 'react-redux';
 import AppNavigator from './src/routes/AppNavigator';
+import store from './src/redux/store';
 
 const App = () => {
   const [appIsReady, setAppIsReady] = useState(false);
@@ -24,7 +26,11 @@ const App = () => {
       onFinish={() => setAppIsReady(true)}
       onError={console.warn}
     />
-  ) : <AppNavigator />;
+  ) : (
+    <Provider store={store}>
+      <AppNavigator />
+    </Provider>
+  );
 };
 
 export default App;

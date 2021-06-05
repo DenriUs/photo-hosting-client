@@ -5,7 +5,7 @@ import CustomModal from './CustomModal';
 import { MODAL_ICON_ERROR_COLOR, MODAL_ICON_SIZE } from '../../other/constants';
 
 interface IProps {
-  isVisible: boolean;
+  isVisible?: boolean;
   text?: string;
   onBackdropPress?: () => void;
   onCloseButtonPress?: () => void;
@@ -26,6 +26,7 @@ const ErrorModal = (props: IProps) => {
         />
       }
       title='Помилка!'
+      {...text && { text }}
       animationIn='bounceIn'
       animationOut='fadeOut'
       {...text && { text }}

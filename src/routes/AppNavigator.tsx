@@ -1,18 +1,21 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, StackNavigationOptions } from '@react-navigation/stack';
 import Authorization from '../screens/entry/Authorization';
-import Main from '../screens/main/Main';
+import MainNavigator from './MainNavigator';
+import { View } from 'react-native';
 
 const AppStack = createStackNavigator();
-const appNavigatorScreenOptions = { headerShown: false };
+const appNavigatorScreenOptions: StackNavigationOptions = { headerShown: false };
 
 const AppNavigator = () => (
   <NavigationContainer>
-    <AppStack.Navigator screenOptions={appNavigatorScreenOptions}>
-      <AppStack.Screen name='Authorization' component={Authorization} />
-      <AppStack.Screen name='Main' component={Main} />
-    </AppStack.Navigator>
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      <AppStack.Navigator screenOptions={appNavigatorScreenOptions}>
+        <AppStack.Screen name='Authorization' component={Authorization} />
+        <AppStack.Screen name='MainNavigator' component={MainNavigator} />
+      </AppStack.Navigator>
+    </View>
   </NavigationContainer>
 );
 

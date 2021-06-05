@@ -4,7 +4,7 @@ import Modal from 'react-native-modal';
 import { Button, Title } from 'react-native-paper';
 
 interface IProps {
-  isVisible: boolean;
+  isVisible?: boolean;
   animationIn?: any;
   animationOut?: any;
   top?: JSX.Element;
@@ -17,7 +17,7 @@ interface IProps {
 }
 
 const CustomModal = (props: IProps) => {
-  const { 
+  const {
     isVisible,
     animationIn,
     animationOut,
