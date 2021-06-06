@@ -2,9 +2,10 @@ import React, { useRef } from 'react';
 import { StyleSheet, View, Text, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Button } from 'react-native-paper';
+import { TopTabBarConfig } from '../../other/types';
 
 interface IProps {
-  tabs: { name: string; component: JSX.Element }[];
+  tabs: TopTabBarConfig[];
   tabBarWidth: number;
   onTabPress?: (tabIndex: number) => void;
   tabBarStyle?: StyleProp<ViewStyle>;
@@ -58,7 +59,7 @@ const TopTabBar = (props: IProps) => {
       onPress={() => switchTab(index)}
       labelStyle={[styles.tabButtonLabel, labelStyle]}
       style={[styles.tabButton, tabButtonStyle]}>
-      <Text>{tab.name}</Text>
+      <Text>{tab.tabName}</Text>
     </Button>
   ));
 

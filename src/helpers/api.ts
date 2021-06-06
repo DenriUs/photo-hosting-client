@@ -21,3 +21,7 @@ export class AxiosHelper {
     return this.axiosInstance;
   }
 }
+
+export const updateStorageAuthToken = async (authToken: string): Promise<void> => {
+  await AsyncStorage.setItem(jwtAsyncStorageKeyName, authToken);
+};

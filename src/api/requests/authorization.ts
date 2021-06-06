@@ -1,9 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AxiosHelper } from '../../helpers/api';
-import { jwtAsyncStorageKeyName } from '../../other/constants';
 import { sendGetRequest, sendPostRequest } from '../methods';
-import { GetResponse, PostResponse } from '../types';
+import { AxiosHelper, updateStorageAuthToken } from '../../helpers/api';
 
 export const loginAccount = createAsyncThunk<
   any,
@@ -11,28 +8,23 @@ export const loginAccount = createAsyncThunk<
   { rejectValue: { error: string; isServerError?: boolean } }
 >('auth/login', async ({ login, password }, { rejectWithValue }) => {
   const response = await sendPostRequest('/auth/login', { login, password });
-  await AsyncStorage.setItem(jwtAsyncStorageKeyName, response.data.accessToken);
+  await updateStorageAuthToken(response.data.accessToken);
+  await AxiosHelper.updateAxiosInstance();
   if (response.error) {
     return rejectWithValue({ error: response.error, isServerError: response.isServerError });
   }
 });
 
-export const registerAccount = async (
-  login: string,
-  email: string,
-  password: string
-): Promise<PostResponse> => {
-  return sendPostRequest('/auth/register', {
-    login,
-    email,
-    password,
-  });
-};
-
-export const logoutAccount = async (): Promise<void> => {
-  await AsyncStorage.setItem(jwtAsyncStorageKeyName, '');
-  await AxiosHelper.updateAxiosInstance();
-};
+export const registerAccount = createAsyncThunk<
+  any,
+  { login: string; email: string; password: string },
+  { rejectValue: { error: string; isServerError?: boolean } }
+>('auth/register', async ({ login, email, password }, { rejectWithValue }) => {
+  const response = await sendPostRequest('/auth/register', { login, email, password });
+  if (response.error) {
+    return rejectWithValue({ error: response.error, isServerError: response.isServerError });
+  }
+});
 
 export const checkAuthStatus = createAsyncThunk<
   any,

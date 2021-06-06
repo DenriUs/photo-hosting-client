@@ -1,7 +1,9 @@
-import { createSlice, isAnyOf } from '@reduxjs/toolkit';
+import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import { checkAuthStatus, loginAccount } from '../../api/requests/authorization';
+import { AuthModalState, AuthState } from '../types';
 
-const initialState = {
+const initialState: AuthState = {
+  authModalState: 'LOGIN',
   isAuthorized: false,
   loading: false,
   error: {
@@ -14,6 +16,12 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    changeAuthModalState: (state, action: PayloadAction<AuthModalState>) => {
+      state.authModalState = action.payload;
+    },
+    logoutAccount: (state) => {
+      state.isAuthorized = false;
+    },
     cleanErrors: (state) => {
       state.error.message = '';
       state.error.isServerError = false;
@@ -40,6 +48,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { cleanErrors } = authSlice.actions;
+export const { changeAuthModalState, logoutAccount, cleanErrors } = authSlice.actions;
 
 export default authSlice.reducer;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -14,7 +14,8 @@ import {
 } from 'react-native';
 import { Button } from 'react-native-paper';
 import Constants from 'expo-constants';
-import { FormikHelpers, FormikProps } from 'formik';
+import { FormikProps } from 'formik';
+import LottieView from 'lottie-react-native';
 import TopTabBar from '../../components/tabBars/TopTabBar';
 import LoginForm from '../../components/forms/LoginForm';
 import RegisterForm from '../../components/forms/RegisterForm';
@@ -25,17 +26,16 @@ import { appLogo } from '../../other/constants';
 import { checkAuthStatus, loginAccount } from '../../api/requests/authorization';
 import SuccessModal from '../../components/modals/SuccessModal';
 import ErrorModal from '../../components/modals/ErrorModal';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import { AxiosHelper } from '../../helpers/api';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { cleanErrors } from '../../redux/slices/authSlice';
+import { changeAuthModalState, cleanErrors } from '../../redux/slices/authSlice';
+import { AuthModalStateConfig } from '../../other/types';
 
 const LOGIN_MODAL_HEIGHT = 305;
 const REGISTER_MODAL_HEIGHT = 378;
 const FORGOT_PASSWORD_MODAL_HEIGHT = 185;
 
-const MODAL_ANIMATION_DURATION = 300;
+const MODAL_ANIMATION_DURATION = 250;
 
 const loginTabName = 'Вхід';
 const registerTabName = 'Реєстрація';
@@ -47,14 +47,10 @@ const forgotPassowrdSubmitName = 'Відправити код';
 const Authorization = () => {
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [errorText, setErrorText] = useState('');
-  const [currentTabIndex, setCurrentTabIndex] = useState(0);
   const [modalOffset, setModalOffset] = useState(0);
-  const [isForgotPassword, setIsForgotPassword] = useState(false);
 
   const authState = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
-
-  const navigation = useNavigation();
 
   const formikRef = useRef<FormikProps<{}>>(null);
 
@@ -70,35 +66,10 @@ const Authorization = () => {
   const normalizedForgotPasswordHeight = normalizeHeight(FORGOT_PASSWORD_MODAL_HEIGHT, fontScale);
 
   const modalHeight = useRef(
-    new Animated.Value(currentTabIndex === 0 ? normalizedLoginHeight : normalizedRegisterHeight)
+    new Animated.Value(
+      authState.authModalState === 'LOGIN' ? normalizedLoginHeight : normalizedRegisterHeight
+    )
   ).current;
-
-  const runModalHeightAnimation = (height: number, duration: number = MODAL_ANIMATION_DURATION) => {
-    Animated.timing(modalHeight, {
-      toValue: height,
-      duration,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const onTabPress = (tabIndex: number) => {
-    topTabBarLabels[tabIndex].name === loginTabName
-      ? runModalHeightAnimation(normalizedLoginHeight)
-      : runModalHeightAnimation(normalizedRegisterHeight);
-    setCurrentTabIndex(tabIndex);
-  };
-
-  const onBackActionPress = () => {
-    runModalHeightAnimation(normalizedLoginHeight);
-    setIsForgotPassword(false);
-  };
-
-  const onForgoPasswordPress = () => {
-    runModalHeightAnimation(normalizedForgotPasswordHeight);
-    setIsForgotPassword(true);
-  };
-
-  const toggleSuccessModal = () => setIsSuccessModalVisible(!setIsSuccessModalVisible);
 
   const onLoginSubmit = async (values: { login: string; password: string }) => {
     dispatch(loginAccount(values));
@@ -112,22 +83,71 @@ const Authorization = () => {
     console.log('forgot password submitted!');
   };
 
-  const topTabBarLabels = [
+  const onBackActionPress = () => {
+    dispatch(changeAuthModalState('LOGIN'));
+  };
+
+  const onForgoPasswordPress = () => {
+    dispatch(changeAuthModalState('FORGOT_PASSWORD'));
+  };
+
+  const authModalStateConfigs: AuthModalStateConfig[] = [
     {
-      name: loginTabName,
-      component: <LoginForm ref={formikRef} onSubmit={onLoginSubmit} />,
+      authModalState: 'LOGIN',
+      tabName: loginTabName,
+      submitName: loginSubmitName,
+      modalHeigh: normalizedLoginHeight,
+      render: <LoginForm ref={formikRef} onSubmit={onLoginSubmit} />,
     },
     {
-      name: registerTabName,
-      component: <RegisterForm ref={formikRef} onSubmit={onRegisterSubmit} />,
+      authModalState: 'REGISTER',
+      tabName: registerTabName,
+      submitName: registerSubmitName,
+      modalHeigh: normalizedRegisterHeight,
+      render: <RegisterForm ref={formikRef} onSubmit={onRegisterSubmit} />,
+    },
+    {
+      authModalState: 'FORGOT_PASSWORD',
+      submitName: forgotPassowrdSubmitName,
+      modalHeigh: normalizedForgotPasswordHeight,
+      render: (
+        <>
+          <CustomHeader
+            title='Відновлення паролю'
+            backActionIcon='chevron-left'
+            onBackActionPress={onBackActionPress}
+          />
+          <ForgotPasswordForm ref={formikRef} onSubmit={onForgotPasswordSubmit} />
+        </>
+      )
     },
   ];
 
-  useEffect(() => {
-    if (authState.error.message) {
-      setErrorText(authState.error.message);
-    }
-  }, [dispatch]);
+  const getCurrentModalStateConfig = (): AuthModalStateConfig | undefined => {
+    return authModalStateConfigs.find(
+      (config) => config.authModalState === authState.authModalState,
+    );
+  }
+
+  const getTopTabBarConfigs = (): AuthModalStateConfig[] => {
+    return authModalStateConfigs.filter(
+      (config) => config.authModalState !== 'FORGOT_PASSWORD',
+    );
+  }
+
+  const onTabPress = (tabIndex: number) => {
+    dispatch(changeAuthModalState(getTopTabBarConfigs()[tabIndex].authModalState));
+  };
+
+  const runModalHeightAnimation = (height: number, duration: number = MODAL_ANIMATION_DURATION) => {
+    Animated.timing(modalHeight, {
+      toValue: height,
+      duration,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const toggleSuccessModal = () => setIsSuccessModalVisible(!setIsSuccessModalVisible);
 
   useEffect(() => {
     (async () => {
@@ -156,6 +176,69 @@ const Authorization = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (authState.error.message) {
+      setErrorText(authState.error.message);
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    const newModalHeight = getCurrentModalStateConfig()?.modalHeigh;
+    if (newModalHeight) {
+      runModalHeightAnimation(newModalHeight);
+    }
+  }, [authState.authModalState]);
+
+  const renderTobTabBar = () => (
+    <>
+      <TopTabBar
+        tabs={getTopTabBarConfigs()}
+        tabBarWidth={modalWidth}
+        onTabPress={onTabPress}
+        tabBarStyle={{ marginBottom: fontScale > 1 ? 0 : 12 }}
+      />
+    </>
+  );
+
+  const renderCurrentModalForm = () => getCurrentModalStateConfig()?.render;
+
+  const renderForgotPasswordButton = () => (
+    <View
+      style={{
+        ...styles.forgotPasswordButtonWrapper,
+      }}>
+      <Button
+        uppercase={false}
+        compact={true}
+        color='#3a2c3a'
+        contentStyle={{ height: normalizeHeight(20, fontScale) }}
+        labelStyle={styles.forgotPasswordButtonLabel}
+        onPress={onForgoPasswordPress}
+        style={styles.forgotPasswordButton}>
+        <Text>Забули пароль?</Text>
+      </Button>
+    </View>
+  );
+
+  const renderSubmitButton = () => (
+    <View style={styles.submitButtonWrapper}>
+      <Button
+        mode="contained"
+        color="#3a2c3a"
+        uppercase={false}
+        onPress={() => {
+          setIsSuccessModalVisible(true);
+          formikRef.current && formikRef.current.submitForm();
+        }}
+        labelStyle={styles.submitButtonLabel}
+        style={styles.submitButton}>
+        <Text>
+          {getCurrentModalStateConfig()?.submitName}
+        </Text>
+      </Button>
+    </View>
+  );
+
   if (authState.loading) {
     return (
       <View style={[styles.flex, styles.loadingContainer]}>
@@ -170,13 +253,13 @@ const Authorization = () => {
       <StatusBar backgroundColor="#f5e0ce" barStyle="dark-content" />
       <SuccessModal
         isVisible={isSuccessModalVisible}
-        text="Обліковий запис зареєстровано успішно."
+        text='Обліковий запис зареєстровано успішно.'
         onBackdropPress={toggleSuccessModal}
         onCloseButtonPress={toggleSuccessModal}
       />
       <ErrorModal
         isVisible={authState.error.isServerError}
-        text="Нам дуже шкода, але сталася невідома помилка."
+        text='Нам дуже шкода, але сталася невідома помилка.'
         onBackdropPress={() => dispatch(cleanErrors())}
         onCloseButtonPress={() => dispatch(cleanErrors())}
       />
@@ -188,69 +271,16 @@ const Authorization = () => {
       </View>
       <View style={styles.flex}>
         <ScrollView
-          keyboardShouldPersistTaps="always"
+          keyboardShouldPersistTaps='always'
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollViewContainer}>
           <View style={{ height: distanceFromModalToStatusBar + modalOffset }}></View>
           <Animated.View style={{ width: modalWidth, height: modalHeight, ...styles.modal }}>
-            {!isForgotPassword ? (
-              <>
-                <TopTabBar
-                  tabs={topTabBarLabels}
-                  tabBarWidth={modalWidth}
-                  onTabPress={onTabPress}
-                  tabBarStyle={{ marginBottom: fontScale > 1 ? 0 : 12 }}
-                />
-                {topTabBarLabels[currentTabIndex].component}
-              </>
-            ) : (
-              <>
-                <CustomHeader
-                  title="Відновлення паролю"
-                  backActionIcon="chevron-left"
-                  onBackActionPress={onBackActionPress}
-                />
-                <ForgotPasswordForm ref={formikRef} onSubmit={onForgotPasswordSubmit} />
-              </>
-            )}
-            {topTabBarLabels[currentTabIndex].name === loginTabName && !isForgotPassword && (
-              <View
-                style={{
-                  ...styles.forgotPasswordButtonWrapper,
-                }}>
-                <Button
-                  uppercase={false}
-                  compact={true}
-                  color="#3a2c3a"
-                  contentStyle={{ height: normalizeHeight(20, fontScale) }}
-                  labelStyle={styles.forgotPasswordButtonLabel}
-                  onPress={onForgoPasswordPress}
-                  style={styles.forgotPasswordButton}>
-                  <Text>Забули пароль?</Text>
-                </Button>
-              </View>
-            )}
+            {authState.authModalState !== 'FORGOT_PASSWORD' && renderTobTabBar()}
+            {renderCurrentModalForm()}
+            {authState.authModalState === 'LOGIN' && renderForgotPasswordButton()}
           </Animated.View>
-          <View style={styles.submitButtonWrapper}>
-            <Button
-              mode="contained"
-              color="#3a2c3a"
-              uppercase={false}
-              onPress={() => {
-                setIsSuccessModalVisible(true);
-                formikRef.current && formikRef.current.submitForm();
-              }}
-              labelStyle={styles.submitButtonLabel}
-              style={styles.submitButton}>
-              <Text>
-                {isForgotPassword
-                  ? forgotPassowrdSubmitName
-                  : currentTabIndex === 0
-                  ? loginSubmitName
-                  : registerSubmitName}
-              </Text>
-            </Button>
-          </View>
+          {renderSubmitButton()}    
         </ScrollView>
       </View>
     </SafeAreaView>
