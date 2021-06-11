@@ -15,27 +15,25 @@ import {
 import { Button } from 'react-native-paper';
 import Constants from 'expo-constants';
 import { FormikProps } from 'formik';
-import LottieView from 'lottie-react-native';
 import TopTabBar from '../../components/tabBars/TopTabBar';
 import LoginForm from '../../components/forms/LoginForm';
 import RegisterForm from '../../components/forms/RegisterForm';
 import ForgotPasswordForm from '../../components/forms/ForgotPasswordForm';
 import CustomHeader from '../../components/headers/CustomHeader';
-import { getPercentagerFromNumber, normalizeHeight } from '../../helpers/calculation';
+import { getPercentageFromNumber, normalizeHeight } from '../../helpers/calculation';
 import { appLogo } from '../../other/constants';
-import { checkAuthStatus, loginAccount } from '../../api/requests/authorization';
+import { loginAccount } from '../../api/requests/authorization';
 import SuccessModal from '../../components/modals/SuccessModal';
 import ErrorModal from '../../components/modals/ErrorModal';
-import { AxiosHelper } from '../../helpers/api';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { changeAuthModalState, cleanErrors } from '../../redux/slices/authSlice';
+import { changeAuthModalState, changeModalOffset, cleanErrors } from '../../redux/slices/authSlice';
 import { AuthModalStateConfig } from '../../other/types';
 
 const LOGIN_MODAL_HEIGHT = 305;
 const REGISTER_MODAL_HEIGHT = 378;
 const FORGOT_PASSWORD_MODAL_HEIGHT = 185;
 
-const MODAL_ANIMATION_DURATION = 250;
+const MODAL_ANIMATION_DURATION = 200;
 
 const loginTabName = 'Вхід';
 const registerTabName = 'Реєстрація';
@@ -46,8 +44,6 @@ const forgotPassowrdSubmitName = 'Відправити код';
 
 const Authorization = () => {
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
-  const [errorText, setErrorText] = useState('');
-  const [modalOffset, setModalOffset] = useState(0);
 
   const authState = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
@@ -57,7 +53,7 @@ const Authorization = () => {
   const { width, height } = useWindowDimensions();
 
   const modalWidth = width * 0.9;
-  const distanceFromModalToStatusBar = getPercentagerFromNumber(height, 30);
+  const distanceFromModalToStatusBar = getPercentageFromNumber(height, 30);
 
   const fontScale = PixelRatio.getFontScale();
 
@@ -139,7 +135,10 @@ const Authorization = () => {
     dispatch(changeAuthModalState(getTopTabBarConfigs()[tabIndex].authModalState));
   };
 
-  const runModalHeightAnimation = (height: number, duration: number = MODAL_ANIMATION_DURATION) => {
+  const runModalHeightAnimation = (
+    height: number,
+    duration: number = MODAL_ANIMATION_DURATION,
+  ) => {
     Animated.timing(modalHeight, {
       toValue: height,
       duration,
@@ -150,13 +149,8 @@ const Authorization = () => {
   const toggleSuccessModal = () => setIsSuccessModalVisible(!setIsSuccessModalVisible);
 
   useEffect(() => {
-    (async () => {
-      await AxiosHelper.updateAxiosInstance();
-      dispatch(checkAuthStatus());
-    })();
-
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
-      const scrollViewOffset = getPercentagerFromNumber(height, 7.2);
+      const scrollViewOffset = getPercentageFromNumber(height, 7.2);
       const openedKeyboardScreenHeight =
         Constants.statusBarHeight +
         distanceFromModalToStatusBar +
@@ -164,23 +158,17 @@ const Authorization = () => {
         event.endCoordinates.height +
         scrollViewOffset;
       const calculatedOffset = height - openedKeyboardScreenHeight;
-      setModalOffset(calculatedOffset < 0 ? calculatedOffset : 0);
+      dispatch(changeModalOffset((calculatedOffset < 0 ? calculatedOffset : 0)));
     });
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () =>
-      setModalOffset(0)
-    );
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      dispatch(changeModalOffset(0));
+    });
 
     return () => {
       keyboardDidHideListener.remove();
       keyboardDidShowListener.remove();
     };
   }, []);
-
-  useEffect(() => {
-    if (authState.error.message) {
-      setErrorText(authState.error.message);
-    }
-  }, [dispatch]);
 
   useEffect(() => {
     const newModalHeight = getCurrentModalStateConfig()?.modalHeigh;
@@ -214,7 +202,8 @@ const Authorization = () => {
         contentStyle={{ height: normalizeHeight(20, fontScale) }}
         labelStyle={styles.forgotPasswordButtonLabel}
         onPress={onForgoPasswordPress}
-        style={styles.forgotPasswordButton}>
+        style={styles.forgotPasswordButton}
+      >
         <Text>Забули пароль?</Text>
       </Button>
     </View>
@@ -226,12 +215,12 @@ const Authorization = () => {
         mode="contained"
         color="#3a2c3a"
         uppercase={false}
-        onPress={() => {
-          setIsSuccessModalVisible(true);
-          formikRef.current && formikRef.current.submitForm();
-        }}
+        disabled={authState.loading}
+        loading={authState.loading}
+        onPress={() => formikRef.current && formikRef.current.submitForm()}
         labelStyle={styles.submitButtonLabel}
-        style={styles.submitButton}>
+        style={styles.submitButton}
+      >
         <Text>
           {getCurrentModalStateConfig()?.submitName}
         </Text>
@@ -239,18 +228,9 @@ const Authorization = () => {
     </View>
   );
 
-  if (authState.loading) {
-    return (
-      <View style={[styles.flex, styles.loadingContainer]}>
-        <StatusBar backgroundColor="#ffffff" barStyle="dark-content" />
-        <LottieView source={require('../../../assets/lottie/loading.json')} autoPlay loop />
-      </View>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.flex}>
-      <StatusBar backgroundColor="#f5e0ce" barStyle="dark-content" />
+      <StatusBar backgroundColor='#f5e0ce' barStyle='dark-content' />
       <SuccessModal
         isVisible={isSuccessModalVisible}
         text='Обліковий запис зареєстровано успішно.'
@@ -265,7 +245,11 @@ const Authorization = () => {
       />
       <View style={{ width, height, ...styles.backgroundContainer }}>
         <View style={styles.backroundHeaderContainer}>
-          <Image source={appLogo} />
+          <Image source={appLogo} style={styles.logo} />
+          <View style={styles.logoTitleWrapper}>
+            <Text style={styles.logoTitlePrefix}>re</Text>
+            <Text style={styles.logoTitle}>Photo</Text>
+          </View>
         </View>
         <View style={styles.backgroundBodyContainer}></View>
       </View>
@@ -273,8 +257,9 @@ const Authorization = () => {
         <ScrollView
           keyboardShouldPersistTaps='always'
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollViewContainer}>
-          <View style={{ height: distanceFromModalToStatusBar + modalOffset }}></View>
+          contentContainerStyle={styles.scrollViewContainer}
+        >
+          <View style={{ height: distanceFromModalToStatusBar + authState.modalOffset }}></View>
           <Animated.View style={{ width: modalWidth, height: modalHeight, ...styles.modal }}>
             {authState.authModalState !== 'FORGOT_PASSWORD' && renderTobTabBar()}
             {renderCurrentModalForm()}
@@ -291,11 +276,6 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
   backgroundContainer: {
     position: 'absolute',
     backgroundColor: '#f5e0ce',
@@ -309,6 +289,22 @@ const styles = StyleSheet.create({
     height: '65%',
     borderTopLeftRadius: 40,
     backgroundColor: '#ffffff',
+  },
+  logo: {
+    width: '35%',
+    height: 90,
+    marginLeft: 8,
+  },
+  logoTitleWrapper: {
+    flexDirection: 'row',
+  },
+  logoTitlePrefix: {
+    fontSize: 45,
+    color: '#3a2c3a',
+  },
+  logoTitle: {
+    fontSize: 45,
+    color: '#f7623c',
   },
   scrollViewContainer: {
     alignItems: 'center',

@@ -1,11 +1,13 @@
 import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
-import { checkAuthStatus, loginAccount } from '../../api/requests/authorization';
 import { AuthModalState, AuthState } from '../types';
+import { checkAuthStatus, loginAccount } from '../../api/requests/authorization';
 
 const initialState: AuthState = {
   authModalState: 'LOGIN',
+  isAuthStatusChecked: false,
+  modalOffset: 0,
   isAuthorized: false,
-  loading: false,
+  loading: true,
   error: {
     message: '',
     isServerError: false,
@@ -19,6 +21,9 @@ const authSlice = createSlice({
     changeAuthModalState: (state, action: PayloadAction<AuthModalState>) => {
       state.authModalState = action.payload;
     },
+    changeModalOffset: (state, action: PayloadAction<number>) => {
+      state.modalOffset = action.payload;
+    },
     logoutAccount: (state) => {
       state.isAuthorized = false;
     },
@@ -28,26 +33,41 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addMatcher(isAnyOf(checkAuthStatus.pending, loginAccount.pending), (state) => {
-      state.loading = true;
+    builder.addCase(checkAuthStatus.fulfilled, (state) => {
+      state.loading = false;
+      state.isAuthorized = true;
+      state.isAuthStatusChecked = true;
     });
-    builder.addMatcher(isAnyOf(checkAuthStatus.fulfilled, loginAccount.fulfilled), (state) => {
+    builder.addCase(loginAccount.fulfilled, (state) => {
       state.loading = false;
       state.isAuthorized = true;
     });
-    builder.addMatcher(
-      isAnyOf(checkAuthStatus.rejected, loginAccount.rejected),
-      (state, action) => {
-        state.loading = false;
-        if (action.payload) {
-          state.error.message = action.payload.error;
-          state.error.isServerError = action.payload.isServerError || false;
-        }
+    builder.addCase(checkAuthStatus.rejected, (state, action) => {
+      state.loading = false;
+      state.isAuthStatusChecked = true;
+      if (action.payload) {
+        state.error.message = action.payload.error;
+        state.error.isServerError = action.payload.isServerError || false;
       }
-    );
+    });
+    builder.addCase(loginAccount.rejected, (state, action) => {
+      state.loading = false;
+      if (action.payload) {
+        state.error.message = action.payload.error;
+        state.error.isServerError = action.payload.isServerError || false;
+      }
+    });
+    builder.addMatcher(isAnyOf(checkAuthStatus.pending, loginAccount.pending), (state) => {
+      state.loading = true;
+    });
   },
 });
 
-export const { changeAuthModalState, logoutAccount, cleanErrors } = authSlice.actions;
+export const {
+  changeAuthModalState, 
+  changeModalOffset,
+  logoutAccount,
+  cleanErrors,
+} = authSlice.actions;
 
 export default authSlice.reducer;

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import AppLoading from 'expo-app-loading';
 import { Asset } from 'expo-asset';
 import { Provider } from 'react-redux';
-import AppNavigator from './src/routes/AppNavigator';
 import store from './src/redux/store';
+import AppNavigator from './src/routes/RootNavigator';
 
 const App = () => {
   const [appIsReady, setAppIsReady] = useState(false);

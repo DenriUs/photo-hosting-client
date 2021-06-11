@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "photo-hosting-client",
-    "slug": "photo-hosting-client",
+    "name": "RePhoto",
+    "slug": "re-photo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,9 +22,14 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#ffffff"
       },
-      "package": "com.photohosting"
+      "package": "com.rePhoto",
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
