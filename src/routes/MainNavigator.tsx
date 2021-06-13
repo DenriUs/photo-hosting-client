@@ -16,7 +16,6 @@ const MainNavigator = () => (
       labeled={false}
       activeColor='#f7623c'
       inactiveColor='rgba(0, 0, 0, 0.2)'
-      sceneAnimationEnabled
       barStyle={styles.tabBarStyle}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, focused }) => {
@@ -32,7 +31,7 @@ const MainNavigator = () => (
             config.style = styles.profileTab;
           }
           return <MaterialCommunityIcons name={config.icon} size={28} color={color} style={config.style} />
-        }
+        },
       })}
     >
       <MainTab.Screen

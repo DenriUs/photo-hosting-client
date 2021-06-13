@@ -36,7 +36,9 @@
     "react-native-web": "^0.16.1",
     "react-redux": "^7.2.4",
     "reanimated-bottom-sheet": "^1.0.0-alpha.22",
-    "yup": "^0.32.9"
+    "yup": "^0.32.9",
+    "react-navigation-shared-element": "next",
+    "react-native-shared-element": "0.7.0"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",
