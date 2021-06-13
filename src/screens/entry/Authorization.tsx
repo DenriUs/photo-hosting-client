@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  SafeAreaView,
   StyleSheet,
   View,
   Text,
@@ -15,6 +14,7 @@ import {
 import { Button } from 'react-native-paper';
 import Constants from 'expo-constants';
 import { FormikProps } from 'formik';
+import { SafeAreaView } from 'react-native-safe-area-context'
 import TopTabBar from '../../components/tabBars/TopTabBar';
 import LoginForm from '../../components/forms/LoginForm';
 import RegisterForm from '../../components/forms/RegisterForm';

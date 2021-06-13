@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import AppLoading from 'expo-app-loading';
 import { Asset } from 'expo-asset';
 import { Provider } from 'react-redux';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import store from './src/redux/store';
 import AppNavigator from './src/routes/RootNavigator';
 
@@ -27,9 +28,11 @@ const App = () => {
       onError={console.warn}
     />
   ) : (
-    <Provider store={store}>
-      <AppNavigator />
-    </Provider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <Provider store={store}>
+        <AppNavigator />
+      </Provider>
+    </SafeAreaProvider>
   );
 };
 

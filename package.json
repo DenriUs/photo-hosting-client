@@ -8,9 +8,11 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^3.6.5",
     "@react-native-async-storage/async-storage": "^1.13.0",
     "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/material-bottom-tabs": "^5.3.15",
+    "@react-navigation/material-top-tabs": "^5.3.15",
     "@react-navigation/native": "^5.9.4",
     "@react-navigation/stack": "^5.14.5",
     "@reduxjs/toolkit": "^1.6.0",
@@ -19,20 +21,22 @@
     "expo-app-loading": "^1.0.3",
     "expo-image-picker": "~10.1.4",
     "formik": "^2.2.9",
+    "lottie-react-native": "3.5.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-native": "https://github.com/expo/react-native/archive/sdk-41.0.0.tar.gz",
     "react-native-gesture-handler": "~1.10.2",
+    "react-native-maps": "0.27.1",
     "react-native-modal": "^11.10.0",
     "react-native-paper": "^4.9.1",
     "react-native-reanimated": "~2.1.0",
     "react-native-screens": "~3.0.0",
+    "react-native-tab-view": "^2.16.0",
     "react-native-vector-icons": "^8.1.0",
     "react-native-web": "^0.16.1",
     "react-redux": "^7.2.4",
-    "yup": "^0.32.9",
-    "lottie-react-native": "3.5.0",
-    "react-native-maps": "0.27.1"
+    "reanimated-bottom-sheet": "^1.0.0-alpha.22",
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

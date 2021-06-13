@@ -26,7 +26,7 @@ const RootNavigator = () => {
       <AppStack.Navigator headerMode='none'>
         {!authState.isAuthStatusChecked ? (
           <AppStack.Screen name='LoadingScreen' component={LoadingScreen} />
-        ) : !authState.isAuthorized ? (
+        ) : authState.isAuthorized ? (
           <AppStack.Screen name='Authorization' component={Authorization} />
         ) : (
           <AppStack.Screen name='MainNavigator' component={MainNavigator} />
