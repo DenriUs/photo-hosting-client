@@ -7,11 +7,13 @@ import { checkAuthStatus } from '../api/requests/authorization';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import LoadingScreen from '../screens/other/LoadingScreen';
 import Authorization from '../screens/entry/Authorization';
+import PhotoCarousel from '../screens/main/PhotoCarousel';
 
 const AppStack = createStackNavigator();
 
 const RootNavigator = () => {
-  const authState = useAppSelector((state) => state.auth);
+  const isAuthStatusChecked = useAppSelector((state) => state.auth.isAuthStatusChecked);
+  const isAuthorized = useAppSelector((state) => state.auth.isAuthorized);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -24,12 +26,15 @@ const RootNavigator = () => {
   return (
     <NavigationContainer>
       <AppStack.Navigator headerMode='none'>
-        {!authState.isAuthStatusChecked ? (
+        {!isAuthStatusChecked ? (
           <AppStack.Screen name='LoadingScreen' component={LoadingScreen} />
-        ) : authState.isAuthorized ? (
+        ) : isAuthorized ? (
           <AppStack.Screen name='Authorization' component={Authorization} />
         ) : (
-          <AppStack.Screen name='MainNavigator' component={MainNavigator} />
+          <>
+            <AppStack.Screen name='MainNavigator' component={MainNavigator} />
+            <AppStack.Screen name='ImageDetails' component={PhotoCarousel} />
+          </>
         )}
       </AppStack.Navigator>
     </NavigationContainer>

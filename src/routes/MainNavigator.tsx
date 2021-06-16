@@ -3,8 +3,8 @@ import { StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import Map from '../screens/main/Map';
-import Profile from '../screens/main/Profile';
 import DeviceMediaStorage from '../screens/main/DeviceMediaStorage';
+import ProfileNavigator from './ProfileNavigator';
 
 const MainTab = createMaterialBottomTabNavigator();
 
@@ -20,11 +20,11 @@ const MainNavigator = () => (
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, focused }) => {
           let config: {
-            icon: 'map' | 'map-outline' | 'account' | 'account-outline',
+            icon: 'home' | 'home-outline' | 'account' | 'account-outline',
             style: {},
-          } = { icon: 'map', style: {} };
+          } = { icon: 'home', style: {} };
           if (route.name === 'Map') {
-            config.icon = focused ? 'map' : 'map-outline';
+            config.icon = focused ? 'home' : 'home-outline';
             config.style = styles.mapTab;
           } else if (route.name === 'Profile') {
             config.icon = focused ? 'account' : 'account-outline';
@@ -40,7 +40,7 @@ const MainNavigator = () => (
       />
       <MainTab.Screen
         name='Profile'
-        component={Profile}
+        component={ProfileNavigator}
       />
     </MainTab.Navigator>
   </>

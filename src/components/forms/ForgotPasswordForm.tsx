@@ -7,7 +7,7 @@ import { FORM_ICON_SIZE } from '../../other/constants';
 import { frogotPasswordSchema } from '../../other/formValidationSchemas';
 
 interface IProps {
-  onSubmit: () => void
+  onSubmit: (values: { email: string }) => void | Promise<void>;
 };
 
 const ForgotPasswordForm = forwardRef((props: IProps, ref: any) => {

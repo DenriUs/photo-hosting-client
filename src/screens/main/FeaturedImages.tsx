@@ -1,21 +1,30 @@
 import React, { useCallback, useMemo } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import { useAppDispatch } from '../../hooks/redux';
+import { openPhotoDetails } from '../../redux/slices/photoSlice';
 
-const FeaturedImages = () => {
+const FeaturedPhotos = () => {
+  const dispatch = useAppDispatch();
+
   const { width } = useWindowDimensions();
 
-  const data = useMemo(
-    () => Array(39).fill(0)
-        .map(() => (
-          <TouchableOpacity onPress={() => console.log(12345)}>
-            <View style={styles.imageWrapper}>
-              <Image source={require('../../../assets/profile-image.png')} style={{ width: width / 3.05, height: width / 3 }} />
-            </View>
-          </TouchableOpacity>
-        )),
-    []
-  );
+  const data = Array(39)
+    .fill(0)
+    .map((_, index) => (
+      <TouchableOpacity onPress={() => {
+          dispatch(openPhotoDetails({
+            id: index.toString(), authorId: index.toString(),
+            creationDate: Date.now(),
+            url: `https://picsum.photos/200/300?random=${index + 39}`,
+          }));
+        }
+      }>
+        <View style={styles.imageWrapper}>
+          <Image source={{ uri: `https://picsum.photos/200/300?random=${index + 39}` }} style={{ width: width / 3.05, height: width / 3 }} />
+        </View>
+      </TouchableOpacity>
+  ));
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -51,4 +60,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FeaturedImages;
+export default FeaturedPhotos;

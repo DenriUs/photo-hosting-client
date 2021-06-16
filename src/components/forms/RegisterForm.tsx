@@ -8,7 +8,7 @@ import { FORM_ICON_SIZE } from '../../other/constants';
 import { registerSchema } from '../../other/formValidationSchemas';
 
 interface IProps {
-  onSubmit: () => void
+  onSubmit: (values: { login: string, email: string, password: string }) => void | Promise<void>;
 };
 
 const RegisterForm = forwardRef((props: IProps, ref: any) => {

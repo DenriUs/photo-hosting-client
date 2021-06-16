@@ -8,16 +8,7 @@ import { FORM_ICON_SIZE } from '../../other/constants';
 import { loginSchema } from '../../other/formValidationSchemas';
 
 interface IProps {
-  onSubmit: (
-    values: {
-      login: string;
-      password: string;
-    },
-    formikHelpers: FormikHelpers<{
-      login: string;
-      password: string;
-    }>,
-  ) => void | Promise<void>;
+  onSubmit: (values: { login: string, password: string }) => void | Promise<void>;
 };
 
 const LoginForm = forwardRef((props: IProps, ref: any) => {

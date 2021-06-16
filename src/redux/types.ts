@@ -1,3 +1,5 @@
+import { Photo } from "../api/entities";
+
 export type AuthModalState = 'LOGIN' | 'REGISTER' | 'FORGOT_PASSWORD';
 
 export interface AuthState {
@@ -10,4 +12,11 @@ export interface AuthState {
     message: string;
     isServerError: boolean;
   };
+}
+
+export interface PhotoState {
+  loadedOwnPhotos: Photo[];
+  currentPhotoIndex: number,
+  currentlyViewedPhoto: Photo | null;
+  isCarouselOpened: boolean;
 }

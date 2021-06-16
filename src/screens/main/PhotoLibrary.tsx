@@ -1,36 +1,34 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { openPhotoCarousel, openPhotoDetails } from '../../redux/slices/photoSlice';
 
-const ImageLibrary = () => {
+const PhotoLibrary = () => {
+  const ownPhotos = useAppSelector((state) => state.photo.loadedOwnPhotos);
+  const dispatch = useAppDispatch();
+
   const { width } = useWindowDimensions();
 
-  const data = useMemo(
-    () => Array(39).fill(0)
-        .map(() => (
-          <TouchableOpacity onPress={() => console.log(12345)}>
-            <View style={styles.imageWrapper}>
-              <Image source={require('../../../assets/profile-image.png')} style={{ width: width / 3.05, height: width / 3 }} />
-            </View>
-          </TouchableOpacity>
-        )),
-    []
-  );
+  const data = ownPhotos.map((photo, index) => ({ index, ...photo }));
 
   const renderItem = useCallback(
     ({ item }) => (
-      <View>
-        {item}
-      </View>
+      <TouchableOpacity onPress={() => dispatch(openPhotoCarousel(item.index))}>
+        <View style={styles.imageWrapper}>
+          <Image source={{ uri: item.url }} style={{ width: width / 3.05, height: width / 3 }} />
+        </View>
+      </TouchableOpacity>
     ),
-    []
+    [],
   );
+
   return (
     <BottomSheetFlatList
       showsVerticalScrollIndicator={false}
       numColumns={3}
       data={data}
-      keyExtractor={(_element, index) => index.toString()}
+      keyExtractor={(photo) => photo.id}
       renderItem={renderItem}
       contentContainerStyle={styles.bottomSheetContentContainer}
     />
@@ -51,4 +49,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ImageLibrary;
+export default PhotoLibrary;

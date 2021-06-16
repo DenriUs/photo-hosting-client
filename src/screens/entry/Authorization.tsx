@@ -67,16 +67,16 @@ const Authorization = () => {
     )
   ).current;
 
-  const onLoginSubmit = async (values: { login: string; password: string }) => {
+  const onLoginSubmit = async (values: { login: string, password: string }) => {
     dispatch(loginAccount(values));
   };
 
-  const onRegisterSubmit = () => {
-    console.log('register submitted!');
+  const onRegisterSubmit = async (values: { login: string, email: string, password: string }) => {
+    dispatch(loginAccount(values));
   };
 
-  const onForgotPasswordSubmit = () => {
-    console.log('forgot password submitted!');
+  const onForgotPasswordSubmit = async (values: { email: string }) => {
+    // dispatch(loginAccount(values));
   };
 
   const onBackActionPress = () => {
