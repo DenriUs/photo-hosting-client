@@ -6,15 +6,20 @@ import { View } from 'react-native';
 
 const DeviceMediaStorage = () => {
   const checkMediaLibraryPermission = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
+    const { granted } = await ImagePicker.getCameraPermissionsAsync();
+    return granted;
+  }
+
+  const ensureMediaLibraryPermission = async () => {
+    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!granted) {
       alert('Вибачте, але для того, щоб завантажувати фото потрібно надати дозвіл!');
       return;
     }
   }
 
   const getImage = async () => {
-    await checkMediaLibraryPermission();
+    await ensureMediaLibraryPermission();
     await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,

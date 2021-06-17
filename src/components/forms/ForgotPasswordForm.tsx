@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginTop: 4,
-    marginBottom: 35,
   },
   textInputWrapper: {
     width: '90%',

@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
-import { StyleSheet, View, StatusBar, Image } from 'react-native';
+import { StyleSheet, View, StatusBar, Image, Text } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { IconButton, Title } from 'react-native-paper';
 import Constants from 'expo-constants';
@@ -9,8 +9,10 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import PhotoLibraryNavigator from '../../routes/PhotoLibraryNavigator';
 import { loadPhotos } from '../../redux/slices/photoSlice';
+import { logoutAccount } from '../../redux/slices/authSlice';
 
 const Profile = () => {
+  const userState = useAppSelector((state) => state.user);
   const photoState = useAppSelector((state) => state.photo);
   const dispatch = useAppDispatch();
 
@@ -37,7 +39,7 @@ const Profile = () => {
     dispatch(loadPhotos(Array(39).fill(0).map((_, index) => ({
       id: index.toString(),
       authorId: index.toString(),
-      url: `https://picsum.photos/800/800?random=1`,
+      url: `https://picsum.photos/800/800?random=${index}`,
       creationDate: Date.now(),
     }))));
   }, []);
@@ -54,6 +56,14 @@ const Profile = () => {
               onPress={() => navigation.navigate('EditUser')}
               style={styles.editButton}
             />
+            <Title>Профіль</Title>
+            <IconButton
+              icon='logout'
+              color='#3a2c3a'
+              size={28}
+              onPress={() => dispatch(logoutAccount())}
+              style={styles.editButton}
+            />
           </View>
           <ScrollView
             nestedScrollEnabled={true}
@@ -65,7 +75,7 @@ const Profile = () => {
                 <View style={styles.profileImageWrapper}>
                   <Image source={{ uri: 'https://picsum.photos/800/800?random=1' }} style={styles.profileImage} />
                 </View>
-                <Title style={styles.loginText}>Login</Title>
+                <Title style={styles.loginText}>{userState.userData.login}</Title>
               </View>
             </View>
           </ScrollView>
@@ -100,7 +110,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     width: '100%',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     marginTop: Constants.statusBarHeight,
   },
   editButton: {

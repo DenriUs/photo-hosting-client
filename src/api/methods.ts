@@ -8,6 +8,8 @@ enum Methods {
 
 const httpServerErrorFirstDigit = 5;
 
+const unauthrorizedStatusCode = 401;
+
 const sendRequest = async (
   method: Methods,
   endpoint: string,
@@ -19,8 +21,13 @@ const sendRequest = async (
     return { data: response.data };
   } catch (error) {
     return {
-      error: error.response.data.message || error.response.data,
-      isServerError: Math.floor(error.response.status / 100) === httpServerErrorFirstDigit,
+      error: {
+        message:
+          error.response.status !== unauthrorizedStatusCode
+            ? error.response.data.message || error.response.data
+            : '',
+        isServerError: Math.floor(error.response.status / 100) === httpServerErrorFirstDigit,
+      },
     };
   }
 };

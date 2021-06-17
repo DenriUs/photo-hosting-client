@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import LoadingScreen from '../screens/other/LoadingScreen';
 import Authorization from '../screens/entry/Authorization';
 import PhotoCarousel from '../screens/main/PhotoCarousel';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AppStack = createStackNavigator();
 
@@ -28,7 +29,7 @@ const RootNavigator = () => {
       <AppStack.Navigator headerMode='none'>
         {!isAuthStatusChecked ? (
           <AppStack.Screen name='LoadingScreen' component={LoadingScreen} />
-        ) : isAuthorized ? (
+        ) : !isAuthorized ? (
           <AppStack.Screen name='Authorization' component={Authorization} />
         ) : (
           <>

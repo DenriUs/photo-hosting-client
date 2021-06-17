@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { StyleSheet, View, Text, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Button } from 'react-native-paper';
@@ -19,7 +19,7 @@ const INDICATOR_ANIMATION_DURATION = 100;
 
 const tabBarIndicatorX = 40;
 
-const TopTabBar = (props: IProps) => {
+const TopTabBar = forwardRef((props: IProps, ref: any) => {
   const {
     tabs,
     tabBarWidth,
@@ -63,6 +63,10 @@ const TopTabBar = (props: IProps) => {
     </Button>
   ));
 
+  useImperativeHandle(ref, () => ({
+    switchTab,
+  }));
+
   return (
     <View ref={topTabBarRef} style={[styles.tabBar, tabBarStyle]}>
       <View style={[styles.tabWrapper, tabsWrapperStyle]}>{renderedTabs}</View>
@@ -79,7 +83,7 @@ const TopTabBar = (props: IProps) => {
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   tabBar: {
