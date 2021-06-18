@@ -24,6 +24,7 @@ export interface AuthState {
   isAuthStatusChecked: boolean;
   modalOffset: number;
   isAuthorized: boolean;
+  authScreenReplaceAnimationType: 'push' | 'pop';
   api: ApiState;
 }
 

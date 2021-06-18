@@ -163,7 +163,7 @@ const Authorization = () => {
   };
 
   useEffect(() => {
-    StatusBar.setBackgroundColor('#f5e0ce');
+    StatusBar.setBackgroundColor('transparent');
     StatusBar.setBarStyle('dark-content');
     
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
@@ -282,13 +282,14 @@ const Authorization = () => {
             {authState.authModalState !== 'FORGOT_PASSWORD' && renderTobTabBar()}
             {renderCurrentModalForm()}
             {authState.api.lastResponseStatus.error.isRequestResult &&
-              !authState.api.lastResponseStatus.error.isServerError && (
-                <View style={{ width: '90%', alignSelf: 'center', alignItems: 'center' }}>
-                  <Text style={{ fontSize: 12.5, color: '#f7623c' }}>
-                    {authState.api.lastResponseStatus.error.message}
-                  </Text>
-                </View> 
-              )
+              !authState.api.lastResponseStatus.error.isServerError &&
+                !!authState.api.lastResponseStatus.error.message && (
+                  <View style={{ width: '90%', alignSelf: 'center', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 12.5, color: '#f7623c' }}>
+                      {authState.api.lastResponseStatus.error.message}
+                    </Text>
+                  </View>
+                )
             }
             {authState.authModalState === 'LOGIN' && renderForgotPasswordButton()}
           </Animated.View>

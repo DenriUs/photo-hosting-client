@@ -2,17 +2,15 @@ import React, { useCallback } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { openPhotoCarousel, openPhotoDetails } from '../../redux/slices/photoSlice';
+import { openPhotoCarousel } from '../../redux/slices/photoSlice';
 
-const PhotoLibrary = () => {
+const LatestImages = () => {
   const ownPhotos = useAppSelector((state) => state.photo.loadedOwnPhotos);
   const dispatch = useAppDispatch();
 
   const { width } = useWindowDimensions();
 
   const data = ownPhotos.map((photo, index) => ({ index, ...photo }));
-
-  console.log(data);
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -51,4 +49,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PhotoLibrary;
+export default LatestImages;

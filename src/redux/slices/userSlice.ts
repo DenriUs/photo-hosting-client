@@ -47,7 +47,6 @@ const userSlice = createSlice({
         state.api.lastResponseStatus.error.message = action.payload.error;
         state.api.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
       }
-      console.log(state);
     });
     builder.addCase(loadCurrentUserData.pending, (state) => {
       dropLastResponseStatus(state);

@@ -2,12 +2,12 @@ import React from 'react';
 import { StyleSheet, useWindowDimensions } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import ImageLibrary from '../screens/main/PhotoLibrary';
+import LatestImages from '../screens/main/LatestImages';
 import FeaturedImages from '../screens/main/FeaturedImages';
 
 const Tab = createMaterialTopTabNavigator();
 
-const PhotoLibaryNavigator = () => {
+const GalleryNavigator = () => {
   const { width } = useWindowDimensions();
 
   const indicatorWidth = width / 2 - 40 * 2;
@@ -38,8 +38,8 @@ const PhotoLibaryNavigator = () => {
         }
       })}
     >
-      <Tab.Screen name='PhotoLibrary' component={ImageLibrary} />
-      <Tab.Screen name='Featured' component={FeaturedImages} />
+      <Tab.Screen name='LatestImages' component={LatestImages} />
+      <Tab.Screen name='FeaturedImages' component={FeaturedImages} />
     </Tab.Navigator>
   );
 };
@@ -55,4 +55,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PhotoLibaryNavigator;
+export default GalleryNavigator;

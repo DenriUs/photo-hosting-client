@@ -18,16 +18,18 @@ const MainNavigator = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (userState.api.lastResponseStatus.error.isRequestResult || !userState.userData) {
+    if (!userState.userData) {
       dispatch(logoutAccount());
     }
   }, [userState.api.lastResponseStatus]);
 
   useEffect(() => {
-    dispatch(loadCurrentUserData());
+    if (!userState.userData) {
+      dispatch(loadCurrentUserData());
+    }
   }, []);
 
-  return userState.api.loading ? <LoadingScreen /> : (
+  return !userState.userData ? <LoadingScreen /> : (
     <>
       <DeviceMediaStorage />
       <MainTab.Navigator

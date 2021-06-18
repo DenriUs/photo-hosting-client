@@ -2,7 +2,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useCallback } from 'react';
 import { FlatList, Image, StatusBar, View } from 'react-native';
 import { Appbar } from 'react-native-paper';
-import { SafeAreaView, useSafeAreaFrame } from 'react-native-safe-area-context';
+import { useSafeAreaFrame } from 'react-native-safe-area-context';
 import { Photo } from '../../api/entities';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { closePhotoCarousel } from '../../redux/slices/photoSlice';

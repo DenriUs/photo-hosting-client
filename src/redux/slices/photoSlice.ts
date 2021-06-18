@@ -1,6 +1,5 @@
 import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
-import { AuthModalState, AuthState, PhotoState } from '../types';
-import { checkAuthStatus, loginAccount } from '../../api/requests/authorization';
+import { PhotoState } from '../types';
 import { Photo } from '../../api/entities';
 import { loadCurrentUserOwnPhotos, uploadPhoto } from '../../api/requests/photo';
 
@@ -65,7 +64,7 @@ const photoSlice = createSlice({
       dropLastResponseStatus(state);
       state.api.loading = true;
     });
-    builder.addMatcher(isAnyOf(uploadPhoto.pending, loadCurrentUserOwnPhotos.rejected), (state, action) => {
+    builder.addMatcher(isAnyOf(uploadPhoto.rejected, loadCurrentUserOwnPhotos.rejected), (state, action) => {
       state.api.loading = false;
       state.api.lastResponseStatus.error.isRequestResult = true;
       if (action.payload) {

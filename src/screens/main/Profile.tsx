@@ -7,11 +7,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import PhotoLibraryNavigator from '../../routes/PhotoLibraryNavigator';
-import { loadPhotos } from '../../redux/slices/photoSlice';
+import GalleryNavigator from '../../routes/GalleryNavigator';
 import { logoutAccount } from '../../redux/slices/authSlice';
 import { loadCurrentUserOwnPhotos } from '../../api/requests/photo';
 import LoadingScreen from '../other/LoadingScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jwtAsyncStorageKeyName } from '../../other/constants';
 
 const Profile = () => {
   const userState = useAppSelector((state) => state.user);
@@ -23,12 +24,18 @@ const Profile = () => {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const snapPoints = useMemo(() => ['52%', '100%'], []);
+
+  const logout = async () => {
+    await AsyncStorage.setItem(jwtAsyncStorageKeyName, '');
+    dispatch(logoutAccount());
+  }
   
   useFocusEffect(
     useCallback(() => {
-      StatusBar.setBackgroundColor('transparent');
+      if (photoState.api.loading) return;
+      StatusBar.setBackgroundColor('#f5e0ce');
       StatusBar.setBarStyle('dark-content');
-    }, [])
+    }, [photoState.api.loading])
   );
 
   useEffect(() => {
@@ -58,7 +65,7 @@ const Profile = () => {
               icon='logout'
               color='#3a2c3a'
               size={28}
-              onPress={() => dispatch(logoutAccount())}
+              onPress={logout}
               style={styles.editButton}
             />
           </View>
@@ -85,7 +92,7 @@ const Profile = () => {
             overDragResistanceFactor={0}
             handleComponent={() => null}
           >
-            <PhotoLibraryNavigator />
+            <GalleryNavigator />
           </BottomSheet>
         </View>
     </SafeAreaView>

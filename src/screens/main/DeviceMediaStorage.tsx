@@ -20,7 +20,7 @@ const DeviceMediaStorage = () => {
 
   const getImage = async () => {
     if (!await checkMediaLibraryPermission()) {
-      alert('Вибачте, але для того, щоб завантажувати фото потрібно надати дозвіл!');
+      alert('Для завантаження зображень потрібно надати дозвіл.');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -29,7 +29,7 @@ const DeviceMediaStorage = () => {
       quality: 1,
     });
     if (result.cancelled) return;
-    dispatch(uploadPhoto(result.uri));
+    dispatch(uploadPhoto({ uri: result.uri }));
   }
 
   return (

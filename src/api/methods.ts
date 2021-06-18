@@ -13,11 +13,12 @@ const unauthrorizedStatusCode = 401;
 const sendRequest = async (
   method: Methods,
   endpoint: string,
-  data?: {}
+  data?: {},
+  headers?: {},
 ): Promise<ServerResponse> => {
   const axiosInstance = await AxiosHelper.getAxiosInstance();
   try {
-    const response = await axiosInstance.request({ method, url: endpoint, data });
+    const response = await axiosInstance.request({ method, url: endpoint, data, headers });
     return { data: response.data };
   } catch (error) {
     return {
@@ -32,10 +33,18 @@ const sendRequest = async (
   }
 };
 
-export const sendGetRequest = (endpoint: string, data?: {}): Promise<ServerResponse> => {
-  return sendRequest(Methods.GET, endpoint, data);
+export const sendGetRequest = (
+  endpoint: string,
+  data?: {},
+  headers?: {},
+): Promise<ServerResponse> => {
+  return sendRequest(Methods.GET, endpoint, data, headers);
 };
 
-export const sendPostRequest = (endpoint: string, data?: {}): Promise<ServerResponse> => {
-  return sendRequest(Methods.POST, endpoint, data);
+export const sendPostRequest = (
+  endpoint: string,
+  data?: {},
+  headers?: {},
+): Promise<ServerResponse> => {
+  return sendRequest(Methods.POST, endpoint, data, headers);
 };
