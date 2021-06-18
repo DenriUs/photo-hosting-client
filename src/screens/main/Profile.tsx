@@ -10,6 +10,8 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import PhotoLibraryNavigator from '../../routes/PhotoLibraryNavigator';
 import { loadPhotos } from '../../redux/slices/photoSlice';
 import { logoutAccount } from '../../redux/slices/authSlice';
+import { loadCurrentUserOwnPhotos } from '../../api/requests/photo';
+import LoadingScreen from '../other/LoadingScreen';
 
 const Profile = () => {
   const userState = useAppSelector((state) => state.user);
@@ -36,15 +38,10 @@ const Profile = () => {
   }, [photoState.isCarouselOpened]);
 
   useEffect(() => {
-    dispatch(loadPhotos(Array(39).fill(0).map((_, index) => ({
-      id: index.toString(),
-      authorId: index.toString(),
-      url: `https://picsum.photos/800/800?random=${index}`,
-      creationDate: Date.now(),
-    }))));
+    dispatch(loadCurrentUserOwnPhotos());
   }, []);
 
-  return (
+  return photoState.api.loading ? <LoadingScreen /> : (
     <SafeAreaView style={styles.flex}>
       <StatusBar translucent />
         <View style={styles.container}>
@@ -136,9 +133,10 @@ const styles = StyleSheet.create({
     top: '-15%',
   },
   profileImageWrapper: {
-    borderColor: '#ffffff',
     borderWidth: 5,
     borderRadius: 80,
+    borderColor: '#ffffff',
+    backgroundColor: '#ffffff',
   },
   profileImage: {
     width: 120,

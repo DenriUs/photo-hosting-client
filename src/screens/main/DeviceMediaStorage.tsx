@@ -3,28 +3,33 @@ import { StyleSheet } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { View } from 'react-native';
+import { useAppDispatch } from '../../hooks/redux';
+import { uploadPhoto } from '../../api/requests/photo';
 
 const DeviceMediaStorage = () => {
+  const dispatch = useAppDispatch();
+
   const checkMediaLibraryPermission = async () => {
     const { granted } = await ImagePicker.getCameraPermissionsAsync();
-    return granted;
-  }
-
-  const ensureMediaLibraryPermission = async () => {
-    const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!granted) {
-      alert('Вибачте, але для того, щоб завантажувати фото потрібно надати дозвіл!');
-      return;
+      const { granted } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!granted) return false;
     }
+    return true;
   }
 
   const getImage = async () => {
-    await ensureMediaLibraryPermission();
-    await ImagePicker.launchImageLibraryAsync({
+    if (!await checkMediaLibraryPermission()) {
+      alert('Вибачте, але для того, щоб завантажувати фото потрібно надати дозвіл!');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
+    if (result.cancelled) return;
+    dispatch(uploadPhoto(result.uri));
   }
 
   return (

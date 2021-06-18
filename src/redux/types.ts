@@ -37,4 +37,5 @@ export interface PhotoState {
   currentPhotoIndex: number,
   currentlyViewedPhoto: Photo | null;
   isCarouselOpened: boolean;
+  api: ApiState;
 }

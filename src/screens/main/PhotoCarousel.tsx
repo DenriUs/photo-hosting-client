@@ -23,7 +23,7 @@ const PhotoCarousel = () => {
   });
 
   const renderItem = useCallback(
-    ({ item }) => <Image resizeMode='contain' source={{ uri: item.url }} style={{ width }} />,
+    ({ item }) => <Image resizeMode='contain' source={{ uri: item.hostUrl }} style={{ width }} />,
     [],
   );
 
@@ -55,7 +55,7 @@ const PhotoCarousel = () => {
         getItemLayout={getItemLayout}
         initialScrollIndex={currentPhotoIndex}
         data={ownPhotos}
-        keyExtractor={(photo) => photo.id}
+        keyExtractor={(photo) => photo._id}
         renderItem={renderItem}
       />
     </View>

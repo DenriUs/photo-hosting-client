@@ -12,11 +12,13 @@ const PhotoLibrary = () => {
 
   const data = ownPhotos.map((photo, index) => ({ index, ...photo }));
 
+  console.log(data);
+
   const renderItem = useCallback(
     ({ item }) => (
       <TouchableOpacity onPress={() => dispatch(openPhotoCarousel(item.index))}>
         <View style={styles.imageWrapper}>
-          <Image source={{ uri: item.url }} style={{ width: width / 3.05, height: width / 3 }} />
+          <Image source={{ uri: item.hostUrl }} style={{ width: width / 3.05, height: width / 3 }} />
         </View>
       </TouchableOpacity>
     ),
@@ -28,7 +30,7 @@ const PhotoLibrary = () => {
       showsVerticalScrollIndicator={false}
       numColumns={3}
       data={data}
-      keyExtractor={(photo) => photo.id}
+      keyExtractor={(photo) => photo._id}
       renderItem={renderItem}
       contentContainerStyle={styles.bottomSheetContentContainer}
     />

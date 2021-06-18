@@ -7,24 +7,24 @@ import { openPhotoDetails } from '../../redux/slices/photoSlice';
 const FeaturedPhotos = () => {
   const dispatch = useAppDispatch();
 
-  const { width } = useWindowDimensions();
+  // const { width } = useWindowDimensions();
 
-  const data = Array(39)
-    .fill(0)
-    .map((_, index) => (
-      <TouchableOpacity onPress={() => {
-          dispatch(openPhotoDetails({
-            id: index.toString(), authorId: index.toString(),
-            creationDate: Date.now(),
-            url: `https://picsum.photos/200/300?random=${index + 39}`,
-          }));
-        }
-      }>
-        <View style={styles.imageWrapper}>
-          <Image source={{ uri: `https://picsum.photos/200/300?random=${index + 39}` }} style={{ width: width / 3.05, height: width / 3 }} />
-        </View>
-      </TouchableOpacity>
-  ));
+  // const data = Array(39)
+  //   .fill(0)
+  //   .map((_, index) => (
+  //     <TouchableOpacity onPress={() => {
+  //         dispatch(openPhotoDetails({
+  //           id: index.toString(), authorId: index.toString(),
+  //           creationDate: Date.now(),
+  //           url: `https://picsum.photos/200/300?random=${index + 39}`,
+  //         }));
+  //       }
+  //     }>
+  //       <View style={styles.imageWrapper}>
+  //         <Image source={{ uri: `https://picsum.photos/200/300?random=${index + 39}` }} style={{ width: width / 3.05, height: width / 3 }} />
+  //       </View>
+  //     </TouchableOpacity>
+  // ));
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -38,7 +38,7 @@ const FeaturedPhotos = () => {
     <BottomSheetFlatList
       showsVerticalScrollIndicator={false}
       numColumns={3}
-      data={data}
+      data={[]}
       keyExtractor={(_element, index) => index.toString()}
       renderItem={renderItem}
       contentContainerStyle={styles.bottomSheetContentContainer}

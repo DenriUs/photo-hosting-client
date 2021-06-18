@@ -5,7 +5,7 @@ export interface User {
 }
 
 export interface Photo {
-  id: string;
+  _id: string;
   authorId: string;
   url: string;
   creationDate: number;
