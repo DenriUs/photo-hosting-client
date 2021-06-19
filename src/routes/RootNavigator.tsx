@@ -42,7 +42,7 @@ const RootNavigator = () => {
           ) : (
             <>
               <AppStack.Screen name='MainNavigator' component={MainNavigator} />
-              <AppStack.Screen name='ImageDetails' component={PhotoCarousel} />
+              <AppStack.Screen name='PhotoCarousel' component={PhotoCarousel} />
             </>
           )}
         </AppStack.Navigator>

@@ -40,12 +40,14 @@ const Profile = () => {
 
   useEffect(() => {
     if (photoState.isCarouselOpened) {
-      navigation.navigate('ImageDetails');
+      navigation.navigate('PhotoCarousel');
     }
   }, [photoState.isCarouselOpened]);
 
   useEffect(() => {
-    dispatch(loadCurrentUserOwnPhotos());
+    if (photoState.loadedOwnPhotos.length === 0) {
+      dispatch(loadCurrentUserOwnPhotos());
+    }
   }, []);
 
   return photoState.api.loading ? <LoadingScreen /> : (

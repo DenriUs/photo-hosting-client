@@ -8,7 +8,6 @@ import ProfileNavigator from './ProfileNavigator';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { loadCurrentUserData } from '../api/requests/user';
-import { logoutAccount } from '../redux/slices/authSlice';
 import LoadingScreen from '../screens/other/LoadingScreen';
 
 const MainTab = createMaterialBottomTabNavigator();
@@ -18,18 +17,12 @@ const MainNavigator = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!userState.userData) {
-      dispatch(logoutAccount());
-    }
-  }, [userState.api.lastResponseStatus]);
-
-  useEffect(() => {
-    if (!userState.userData) {
+    if (!userState.userData.id) {
       dispatch(loadCurrentUserData());
     }
   }, []);
 
-  return !userState.userData ? <LoadingScreen /> : (
+  return userState.api.loading ? <LoadingScreen /> : (
     <>
       <DeviceMediaStorage />
       <MainTab.Navigator

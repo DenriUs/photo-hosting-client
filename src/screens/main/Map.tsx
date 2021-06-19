@@ -1,38 +1,105 @@
-import React from 'react';
-import { View, StyleSheet, StatusBar, Image, Text } from 'react-native';
+import React, { RefObject, useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, StatusBar } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { Svg } from 'react-native-svg';
-import WebView from 'react-native-webview';
+import { Svg, Image as ImageSVG } from 'react-native-svg';
+import { useAppDispatch, useAppSelector } from '../../hooks/redux';
+import { converToDecimalDegrees } from '../../helpers/calculation';
+import { changeCarouselMode, loadMarkers, openPhotoCarousel } from '../../redux/slices/photoSlice';
+import { loadCurrentUserOwnPhotos } from '../../api/requests/photo';
+import LoadingScreen from '../other/LoadingScreen';
 
 const Map = () => {
+  const [markerRefs, setMarkerRefs] = useState<RefObject<Marker>[]>([]);
+
+  const navigation = useNavigation();
+
+  const photoState = useAppSelector((state) => state.photo);
+  const dispatch = useAppDispatch();
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBackgroundColor('rgba(0, 0, 0, 0.3)');
       StatusBar.setBarStyle('light-content');
     }, [])
-  )
+  );
 
-  return (
+  useFocusEffect(
+    useCallback(() => {
+      if (photoState.loadedOwnPhotos.length > 0) {
+        if (photoState.photoMarkers.length !== photoState.loadedOwnPhotos.length) {
+          const markers = photoState.loadedOwnPhotos.filter((photo) => photo.longitude && photo.latitude);
+          dispatch(loadMarkers(markers));
+        }
+      }
+    }, [photoState.loadedOwnPhotos])
+  );
+
+  useEffect(() => {
+    setMarkerRefs((markerRefs) =>
+      Array(photoState.photoMarkers.length)
+        .fill(0)
+        .map((_, i) => markerRefs[i] || React.createRef())
+    );
+  }, [photoState.photoMarkers.length]);
+
+  useEffect(() => {
+    if (photoState.isCarouselOpened) {
+      navigation.navigate('PhotoCarousel');
+    }
+  }, [photoState.isCarouselOpened]);
+
+  useEffect(() => {
+    if (photoState.loadedOwnPhotos.length === 0) {
+      dispatch(loadCurrentUserOwnPhotos());
+    }
+  }, []);
+
+  const renderedMarkers = photoState.photoMarkers.map((photo, index) => {
+    return (
+      <Marker
+        key={photo._id}
+        ref={markerRefs[index]}
+        coordinate={{
+          latitude: photo.latitude,
+          longitude: photo.longitude,
+        }}
+        onPress={() => {
+          setTimeout(() => {
+            markerRefs[index]?.current?.hideCallout();
+            markerRefs[index]?.current?.showCallout();
+          }, 200);
+        }}
+      >
+        <Callout
+          onPress={() => {
+            dispatch(changeCarouselMode('marker'));
+            dispatch(openPhotoCarousel(index));
+          }}
+        >
+          <Svg style={styles.imageWrapper}>
+            <ImageSVG
+              width={'100%'}
+              height={'100%'}
+              preserveAspectRatio="xMidYMid slice"
+              href={{ uri: photo.hostUrl }}
+            />
+          </Svg>
+        </Callout>
+      </Marker>
+    )
+  });
+
+  return photoState.api.loading ? <LoadingScreen /> : (
     <View style={styles.flex}>
       <StatusBar translucent />
       <MapView
+        rotateEnabled={false}
         provider={PROVIDER_GOOGLE}
         style={styles.flex}
       >
-        <Marker
-          coordinate={{
-            latitude: 37,
-            longitude: -122,
-          }}
-        >
-          <Callout>
-            <View>
-              <WebView style={{ height: 100 , width: 100, }} source={{ uri: 'https://picsum.photos/400/400?random=1' }} />
-            </View>
-          </Callout>
-        </Marker>
+        {renderedMarkers}
       </MapView>
     </View>
   )
@@ -42,6 +109,12 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  imageWrapper: {
+    width: 100,
+    height: 100,
+    borderWidth: 1,
+    borderColor: '#fff',
+  }
 });
 
 export default Map;

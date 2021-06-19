@@ -12,3 +12,16 @@ export type MainAuthModalStateConfig = {
 };
 
 export type AuthModalStateConfig = MainAuthModalStateConfig & TopTabBarConfig;
+
+export type ExifData = {
+  cameraModel: string,
+  apertureValue: number,
+  exposureTime: number,
+  focalLenght: number,
+  iso: number,
+  creationDate: string,
+  width: number,
+  height: number,
+  latitude: number,
+  longitude: number,
+}

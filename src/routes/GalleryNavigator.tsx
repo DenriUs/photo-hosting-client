@@ -31,7 +31,7 @@ const GalleryNavigator = () => {
         tabBarLabel: '',
         tabBarIcon: ({ color, focused }) => {
           let iconName: 'image-multiple' | 'image-multiple-outline' | 'star' | 'star-outline' = 'image-multiple';
-          if (route.name === 'Featured') {
+          if (route.name === 'FeaturedImages') {
             iconName = focused ? 'star' : 'star-outline';
           }
           return <MaterialCommunityIcons name={iconName} size={26} color={color} />

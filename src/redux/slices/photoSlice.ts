@@ -1,13 +1,15 @@
 import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
-import { PhotoState } from '../types';
+import { CarouselMode, PhotoState } from '../types';
 import { Photo } from '../../api/entities';
 import { loadCurrentUserOwnPhotos, uploadPhoto } from '../../api/requests/photo';
 
 const initialState: PhotoState = {
   loadedOwnPhotos: [],
+  photoMarkers: [],
   currentPhotoIndex: 0,
   currentlyViewedPhoto: null,
   isCarouselOpened: false,
+  carouselMode: 'own',
   api: {
     loading: true,
     lastResponseStatus: {
@@ -34,6 +36,12 @@ const photoSlice = createSlice({
   reducers: {
     loadPhotos: (state, action: PayloadAction<Photo[]>) => {
       state.loadedOwnPhotos = action.payload;
+    },
+    loadMarkers: (state, action: PayloadAction<Photo[]>) => {
+      state.photoMarkers = action.payload;
+    },
+    changeCarouselMode: (state, action: PayloadAction<CarouselMode>) => {
+      state.carouselMode = action.payload;
     },
     openPhotoCarousel: (state, action: PayloadAction<number>) => {
       state.isCarouselOpened = true;
@@ -77,6 +85,8 @@ const photoSlice = createSlice({
 
 export const {
   loadPhotos,
+  loadMarkers,
+  changeCarouselMode,
   openPhotoCarousel,
   closePhotoCarousel,
   openPhotoDetails,

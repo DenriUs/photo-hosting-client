@@ -48,6 +48,7 @@ const forgotPassowrdSubmitName = 'Відправити код';
 
 const Authorization = () => {
   const authState = useAppSelector((state) => state.auth);
+  const userState = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
 
   const formikRef = useRef<FormikProps<{}>>(null);

@@ -1,5 +1,6 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useCallback } from 'react';
+import { useEffect } from 'react';
 import { FlatList, Image, StatusBar, View } from 'react-native';
 import { Appbar } from 'react-native-paper';
 import { useSafeAreaFrame } from 'react-native-safe-area-context';
@@ -13,6 +14,8 @@ const PhotoCarousel = () => {
   const navigation = useNavigation();
 
   const ownPhotos = useAppSelector((state) => state.photo.loadedOwnPhotos);
+  const photoMarkers = useAppSelector((state) => state.photo.photoMarkers);
+  const carouselMode = useAppSelector((state) => state.photo.carouselMode)
   const currentPhotoIndex = useAppSelector((state) => state.photo.currentPhotoIndex);
   const dispatch = useAppDispatch();
 
@@ -54,7 +57,7 @@ const PhotoCarousel = () => {
         pagingEnabled
         getItemLayout={getItemLayout}
         initialScrollIndex={currentPhotoIndex}
-        data={ownPhotos}
+        data={carouselMode === 'own' ? ownPhotos : photoMarkers}
         keyExtractor={(photo) => photo._id}
         renderItem={renderItem}
       />

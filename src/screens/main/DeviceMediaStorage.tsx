@@ -5,6 +5,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { View } from 'react-native';
 import { useAppDispatch } from '../../hooks/redux';
 import { uploadPhoto } from '../../api/requests/photo';
+import * as ImageManipulator from 'expo-image-manipulator';
+import { ExifData } from '../../other/types';
 
 const DeviceMediaStorage = () => {
   const dispatch = useAppDispatch();
@@ -25,11 +27,23 @@ const DeviceMediaStorage = () => {
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
+      exif: true,
+      quality: 0.5,
     });
     if (result.cancelled) return;
-    dispatch(uploadPhoto({ uri: result.uri }));
+    const exifData: ExifData = {
+      cameraModel: result.exif?.Model,
+      apertureValue: result.exif?.ApertureValue,
+      exposureTime: result.exif?.ExposureTime,
+      focalLenght: result.exif?.FocalLength,
+      iso: result.exif?.ISOSpeedRatings,
+      creationDate: result.exif?.DateTime || new Date().toISOString(),
+      width: result.exif?.ImageWidth,
+      height: result.exif?.ImageLength,
+      latitude: result.exif?.GPSLatitude,
+      longitude: result.exif?.GPSLongitude,
+    }
+    dispatch(uploadPhoto({ uri: result.uri, exifData }));
   }
 
   return (

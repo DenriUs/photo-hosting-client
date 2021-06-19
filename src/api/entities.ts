@@ -7,8 +7,16 @@ export interface User {
 export interface Photo {
   _id: string;
   authorId: string;
-  url: string;
-  creationDate: number;
-  locationLatitude?: number;
-  locationLongitude?: number;
+  originalName: string;
+  hostUrl: string;
+  creationDate: string;
+  latitude: number;
+  longitude: number;
+  width?: number;
+  height?: number;
+  cameraModel?: string;
+  apertureValue?: number;
+  exposureTime?: number;
+  focalLenght?: number;
+  iso?: number;
 }

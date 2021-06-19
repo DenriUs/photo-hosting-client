@@ -11,7 +11,7 @@ export const MODAL_ICON_ERROR_COLOR = '#f7623c';
 
 export const jwtAsyncStorageKeyName = 'jwt';
 
-const serverURL = 'https://8741220daba2.ngrok.io';
+const serverURL = '';
 const axiosTimeoutSeconds = 20;
 
 export const mainAxiosRequestConfig: AxiosRequestConfig = {

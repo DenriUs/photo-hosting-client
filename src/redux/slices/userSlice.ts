@@ -4,13 +4,14 @@ import { loadCurrentUserData } from '../../api/requests/user';
 import { UserState } from '../types';
 
 const initialState: UserState = {
+  hasLoadAttempt: false,
   userData: {
     id: '',
     login: '',
     email: '',
   },
   api: {
-    loading: true,
+    loading: false,
     lastResponseStatus: {
       success: {
         isRequestResult: false,
@@ -37,8 +38,9 @@ const userSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(loadCurrentUserData.fulfilled, (state, action: PayloadAction<User>) => {
       state.api.loading = false;
-      state.api.lastResponseStatus.success.isRequestResult = true;
       state.userData = action.payload;
+      state.api.lastResponseStatus.success.isRequestResult = true;
+      state.hasLoadAttempt = true;
     });
     builder.addCase(loadCurrentUserData.rejected, (state, action) => {
       state.api.loading = false;
@@ -47,6 +49,7 @@ const userSlice = createSlice({
         state.api.lastResponseStatus.error.message = action.payload.error;
         state.api.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
       }
+      state.hasLoadAttempt = true;
     });
     builder.addCase(loadCurrentUserData.pending, (state) => {
       dropLastResponseStatus(state);
@@ -56,7 +59,6 @@ const userSlice = createSlice({
 });
 
 export const {
-
 } = userSlice.actions;
 
 export default userSlice.reducer;

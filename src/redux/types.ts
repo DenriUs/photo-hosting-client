@@ -1,6 +1,8 @@
 import { Photo, User } from '../api/entities';
 
 export type AuthModalState = 'LOGIN' | 'REGISTER' | 'FORGOT_PASSWORD';
+export type ReplaceAnimationType = 'push' | 'pop';
+export type CarouselMode = 'own' | 'marker';
 
 export interface ResponseStatusState {
   success: {
@@ -24,19 +26,22 @@ export interface AuthState {
   isAuthStatusChecked: boolean;
   modalOffset: number;
   isAuthorized: boolean;
-  authScreenReplaceAnimationType: 'push' | 'pop';
+  authScreenReplaceAnimationType: ReplaceAnimationType;
   api: ApiState;
 }
 
 export interface UserState {
-  userData: User,
+  hasLoadAttempt: boolean;
+  userData: User;
   api: ApiState;
 }
 
 export interface PhotoState {
   loadedOwnPhotos: Photo[];
-  currentPhotoIndex: number,
+  photoMarkers: Photo[];
+  currentPhotoIndex: number;
   currentlyViewedPhoto: Photo | null;
   isCarouselOpened: boolean;
+  carouselMode: CarouselMode;
   api: ApiState;
 }
