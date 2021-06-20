@@ -2,11 +2,9 @@ import React, { useCallback, useMemo, useRef } from 'react';
 import { FlatList, Image, StatusBar, View, ViewToken, StyleSheet, Text } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { useHeaderHeight } from '@react-navigation/stack';
 import { LinearGradient, LinearGradientPoint } from 'expo-linear-gradient';
 import moment from 'moment';
-import { useState } from 'react';
-import { Appbar, Title } from 'react-native-paper';
+import { Appbar, Button, Title } from 'react-native-paper';
 import { useSafeAreaFrame } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Photo } from '../../api/entities';
@@ -16,6 +14,8 @@ import {
   changeOpenedPhotoIndex,
   closePhotoCarousel,
 } from '../../redux/slices/photoCarouselSlice';
+import { useEffect } from 'react';
+import { openLocationPickerMap, setLocationPickerMapMarker } from '../../redux/slices/mapSlice';
 
 const PhotoCarousel = () => {
   const { width } = useSafeAreaFrame();
@@ -39,6 +39,9 @@ const PhotoCarousel = () => {
   const loadedPhotos = useAppSelector((state) => state.photoCarousel.loadedPhotos);
   const openedPhotoIndex = useAppSelector((state) => state.photoCarousel.openedPhotoIndex);
   const currentlyViewedPhoto = useAppSelector((state) => state.photoCarousel.currentlyViewedPhoto);
+  const isLocationPicketMapOpened = useAppSelector(
+    (state) => state.map.locationPickerMapState.isOpened,
+  );
   const dispatch = useAppDispatch();
 
   const getItemLayout = (_data: Photo[] | null | undefined, index: number) => ({
@@ -53,13 +56,25 @@ const PhotoCarousel = () => {
   );
 
   const onHeaderBackActionPress = () => {
-    dispatch(closePhotoCarousel());
     navigation.goBack();
   }
 
   const onDetailsButtonPress = () => {
     dispatch(changeCurrentlyViwedPhoto(loadedPhotos[openedPhotoIndex]));
     bottomSheetRef.current?.snapTo(1);
+  }
+
+  const onViewPhotoLocationPress = () => {
+    if (!currentlyViewedPhoto) return;
+    dispatch(setLocationPickerMapMarker({
+      longitude: currentlyViewedPhoto.longitude,
+      latitude: currentlyViewedPhoto.latitude,
+    }));
+    dispatch(openLocationPickerMap('VIEW'));
+  }
+
+  const onAddPhotoLocationPress = () => {
+    dispatch(openLocationPickerMap('NEW'));
   }
 
   useFocusEffect(
@@ -69,6 +84,12 @@ const PhotoCarousel = () => {
       return () => dispatch(closePhotoCarousel());
     }, [])
   );
+
+  useEffect(() => {
+    if (isLocationPicketMapOpened) {
+      navigation.navigate('LocationPickerMap');
+    }
+  }, [isLocationPicketMapOpened]);
 
   const renderBottomSheetHandleComponent = () => (
     <View style={styles.bottomSheetHeader}>
@@ -87,6 +108,20 @@ const PhotoCarousel = () => {
             {moment(currentlyViewedPhoto.creationDate).locale('uk').format('llll')}
           </Title>
         </View>
+      )}
+      {(currentlyViewedPhoto?.latitude && currentlyViewedPhoto?.longitude) && (
+        <Button
+          icon='map-marker-outline'
+          uppercase={false}
+          onPress={onViewPhotoLocationPress}
+          color={'#f7623c'}
+          contentStyle={{ right: 2.5 }}
+          style={{ alignSelf: 'flex-start', marginTop: 25, marginLeft: 10 }}
+        >
+          <Text style={{ color: '#f7623c', letterSpacing: 0.5 }}>
+            Переглянути на карті
+          </Text>
+        </Button>
       )}
       <View>
         <Title style={styles.photoInfoTitle}>Інформація про фото:</Title>
@@ -115,6 +150,20 @@ const PhotoCarousel = () => {
             </View>
           </View>
         </View>
+      )}
+      {(!currentlyViewedPhoto?.latitude || !currentlyViewedPhoto?.longitude) && (
+        <Button
+          icon='map-marker-outline'
+          uppercase={false}
+          onPress={onAddPhotoLocationPress}
+          color={'#f7623c'}
+          contentStyle={{ right: 2.5 }}
+          style={{ alignSelf: 'flex-start', marginTop: 25, marginLeft: 10 }}
+        >
+          <Text style={{ color: '#f7623c', letterSpacing: 0.5 }}>
+            Додати місце зйомки
+          </Text>
+        </Button>
       )}
     </View>
   );
@@ -208,6 +257,7 @@ const styles = StyleSheet.create({
   deatailsContainer: {
     marginTop: 15,
     marginLeft: 20,
+    marginRight: 20,
   },
   creationDate: {
     fontSize: 17,
@@ -222,7 +272,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     marginLeft: 10,
-    marginRight: 20,
   },
   photoDetailsWrapper: {
     justifyContent: 'center',

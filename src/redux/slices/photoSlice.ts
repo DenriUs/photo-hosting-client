@@ -1,11 +1,10 @@
 import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import { PhotoState } from '../types';
 import { Photo } from '../../api/entities';
-import { loadCurrentUserOwnPhotos, uploadPhoto } from '../../api/requests/photo';
+import { getOwnPhotos, uploadPhoto } from '../../api/requests/photo';
 
 const initialState: PhotoState = {
-  loadedOwnPhotos: [],
-  photoMarkers: [],
+  ownPhotos: [],
   uploading: false,
   loading: false,
   lastResponseStatus: {
@@ -29,9 +28,6 @@ const photoSlice = createSlice({
   name: 'photo',
   initialState,
   reducers: {
-    loadMarkers: (state, action: PayloadAction<Photo[]>) => {
-      state.photoMarkers = action.payload;
-    },
     changeApiLoadingStatus: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
@@ -40,22 +36,22 @@ const photoSlice = createSlice({
     builder.addCase(uploadPhoto.fulfilled, (state, action: PayloadAction<Photo>) => {
       state.uploading = false;
       state.lastResponseStatus.success.isRequestResult = true;
-      state.loadedOwnPhotos.push(action.payload);
+      state.ownPhotos.push(action.payload);
     });
-    builder.addCase(loadCurrentUserOwnPhotos.fulfilled, (state, action: PayloadAction<Photo[]>) => {
+    builder.addCase(getOwnPhotos.fulfilled, (state, action: PayloadAction<Photo[]>) => {
       state.loading = false;
       state.lastResponseStatus.success.isRequestResult = true;
-      state.loadedOwnPhotos = action.payload;
+      state.ownPhotos = action.payload;
     });
     builder.addCase(uploadPhoto.pending, (state) => {
       dropLastResponseStatus(state);
       state.uploading = true;
     });
-    builder.addCase(loadCurrentUserOwnPhotos.pending, (state) => {
+    builder.addCase(getOwnPhotos.pending, (state) => {
       dropLastResponseStatus(state);
       state.loading = true;
     });
-    builder.addMatcher(isAnyOf(uploadPhoto.rejected, loadCurrentUserOwnPhotos.rejected), (state, action) => {
+    builder.addMatcher(isAnyOf(uploadPhoto.rejected, getOwnPhotos.rejected), (state, action) => {
       state.uploading = false;
       state.loading = false;
       state.lastResponseStatus.error.isRequestResult = true;
@@ -68,7 +64,6 @@ const photoSlice = createSlice({
 });
 
 export const {
-  loadMarkers,
   changeApiLoadingStatus,
 } = photoSlice.actions;
 

@@ -1,13 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import FormData from 'form-data';
 import mime from 'mime';
-import { Platform } from 'react-native';
-import { jwtAsyncStorageKeyName } from '../../other/constants';
-import { ExifData } from '../../other/types';
-import { sendGetRequest, sendPostRequest } from '../methods';
+import FormData from 'form-data';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RejectedValue } from '../types';
+import { sendGetRequest, sendPostRequest } from '../methods';
+import { ExifData } from '../../other/types';
 
 const getFileUploadFormData = (fileUri: string, body: ExifData): FormData => {
   const formData = new FormData();
@@ -40,12 +36,27 @@ export const uploadPhoto = createAsyncThunk<
   return response.data;
 });
 
-export const loadCurrentUserOwnPhotos = createAsyncThunk<
+export const getOwnPhotos = createAsyncThunk<
   any,
   void,
   { rejectValue: RejectedValue }
 >('photo/getOwnPhotos', async (_void, { rejectWithValue }) => {
   const response = await sendGetRequest('/photo/getOwnPhotos');
+  if (response.error) {
+    return rejectWithValue({
+      error: response.error.message,
+      isServerError: response.error.isServerError,
+    });
+  }
+  return response.data;
+});
+
+export const updatePhoto = createAsyncThunk<
+  any,
+  { id: string, latitude: number, longitude: number },
+  { rejectValue: RejectedValue }
+>('photo/update', async (data, { rejectWithValue }) => {
+  const response = await sendPostRequest('/photo/update', data);
   if (response.error) {
     return rejectWithValue({
       error: response.error.message,

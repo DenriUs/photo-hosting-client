@@ -7,8 +7,8 @@ export const loginAccount = createAsyncThunk<
   any,
   { login: string, password: string },
   { rejectValue: RejectedValue }
->('auth/login', async ({ login, password }, { rejectWithValue }) => {
-  const response = await sendPostRequest('/auth/login', { login, password });
+>('auth/login', async (data, { rejectWithValue }) => {
+  const response = await sendPostRequest('/auth/login', data);
   await updateStorageAuthToken(response.data?.accessToken || '');
   await AxiosHelper.updateAxiosInstance();
   if (response.error) {
@@ -23,8 +23,8 @@ export const registerAccount = createAsyncThunk<
   any,
   { login: string; email: string; password: string },
   { rejectValue: RejectedValue }
->('auth/register', async ({ login, email, password }, { rejectWithValue }) => {
-  const response = await sendPostRequest('/auth/register', { login, email, password });
+>('auth/register', async (data, { rejectWithValue }) => {
+  const response = await sendPostRequest('/auth/register', data);
   if (response.error) {
     return rejectWithValue({
       error: response.error.message,

@@ -8,7 +8,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import GalleryNavigator from '../../routes/GalleryNavigator';
 import { logoutAccount } from '../../redux/slices/authSlice';
-import { loadCurrentUserOwnPhotos } from '../../api/requests/photo';
+import { getOwnPhotos } from '../../api/requests/photo';
 import LoadingScreen from '../other/LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtAsyncStorageKeyName } from '../../other/constants';
@@ -45,8 +45,8 @@ const Profile = () => {
   }, [isCarouselOpened]);
 
   useEffect(() => {
-    if (photoState.loadedOwnPhotos.length === 0) {
-      dispatch(loadCurrentUserOwnPhotos());
+    if (photoState.ownPhotos.length === 0) {
+      dispatch(getOwnPhotos());
     }
   }, []);
 
@@ -60,7 +60,7 @@ const Profile = () => {
               refreshControl={
                 <RefreshControl
                   refreshing={photoState.loading}
-                  onRefresh={() => dispatch(loadCurrentUserOwnPhotos())}
+                  onRefresh={() => dispatch(getOwnPhotos())}
                   colors={['#3a2c3a', '#f7623c']}
                 />
               }

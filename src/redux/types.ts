@@ -1,6 +1,8 @@
+import { LatLng } from 'react-native-maps';
 import { Photo, User } from '../api/entities';
 
 export type AuthModalState = 'LOGIN' | 'REGISTER' | 'FORGOT_PASSWORD';
+export type LocationPickerMapMode = 'VIEW' | 'NEW';
 export type ReplaceAnimationType = 'push' | 'pop';
 
 export interface ResponseStatusState {
@@ -13,6 +15,12 @@ export interface ResponseStatusState {
     message: string;
     isServerError: boolean;
   };
+}
+
+export interface LocationPickerMapState {
+  markerLatLng: LatLng | null;
+  mode: LocationPickerMapMode;
+  isOpened: boolean;
 }
 export interface AuthState {
   authModalState: AuthModalState;
@@ -32,8 +40,7 @@ export interface UserState {
 }
 
 export interface PhotoState {
-  loadedOwnPhotos: Photo[];
-  photoMarkers: Photo[];
+  ownPhotos: Photo[];
   uploading: boolean;
   loading: boolean;
   lastResponseStatus: ResponseStatusState;
@@ -44,6 +51,13 @@ export interface PhotoCarouselState {
   openedPhotoIndex: number;
   currentlyViewedPhoto: Photo | null;
   isCarouselOpened: boolean;
+  loading: boolean;
+  lastResponseStatus: ResponseStatusState;
+}
+
+export interface MapState {
+  photoMarkers: Photo[];
+  locationPickerMapState: LocationPickerMapState;
   loading: boolean;
   lastResponseStatus: ResponseStatusState;
 }

@@ -1,7 +1,7 @@
 import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import { PhotoCarouselState } from '../types';
 import { Photo } from '../../api/entities';
-import { loadCurrentUserOwnPhotos, uploadPhoto } from '../../api/requests/photo';
+import { uploadPhoto } from '../../api/requests/photo';
 
 const initialState: PhotoCarouselState = {
   loadedPhotos: [],

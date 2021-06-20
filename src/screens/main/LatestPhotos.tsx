@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
 
 const LatestPhotos = () => {
-  const ownPhotos = useAppSelector((state) => state.photo.loadedOwnPhotos);
+  const ownPhotos = useAppSelector((state) => state.photo.ownPhotos);
   const dispatch = useAppDispatch();
 
   const { width } = useWindowDimensions();

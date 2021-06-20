@@ -9,6 +9,7 @@ import LoadingScreen from '../screens/other/LoadingScreen';
 import Authorization from '../screens/entry/Authorization';
 import PhotoCarousel from '../screens/main/PhotoCarousel';
 import { loadCurrentUserData } from '../api/requests/user';
+import LocationPickerMap from '../screens/main/LocationPIckerMap';
 
 const AppStack = createStackNavigator();
 
@@ -43,6 +44,7 @@ const RootNavigator = () => {
             <>
               <AppStack.Screen name='MainNavigator' component={MainNavigator} />
               <AppStack.Screen name='PhotoCarousel' component={PhotoCarousel} />
+              <AppStack.Screen name='LocationPickerMap' component={LocationPickerMap} />
             </>
           )}
         </AppStack.Navigator>

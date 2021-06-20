@@ -5,19 +5,33 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Svg, Image as ImageSVG } from 'react-native-svg';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { loadMarkers } from '../../redux/slices/photoSlice';
-import { loadCurrentUserOwnPhotos } from '../../api/requests/photo';
+import { getOwnPhotos } from '../../api/requests/photo';
 import LoadingScreen from '../other/LoadingScreen';
 import { loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
+import { loadMarkers } from '../../redux/slices/mapSlice';
 
 const Map = () => {
   const [markerRefs, setMarkerRefs] = useState<RefObject<Marker>[]>([]);
 
   const navigation = useNavigation();
 
-  const photoState = useAppSelector((state) => state.photo);
+  const mapState = useAppSelector((state) => state.map);
+  const ownPhotos = useAppSelector((state) => state.photo.ownPhotos);
+  const photoUploading = useAppSelector((state) => state.photo.uploading);
   const isCarouselOpened = useAppSelector((state) => state.photoCarousel.isCarouselOpened);
   const dispatch = useAppDispatch();
+
+  const onMarkerPress = (markerIndex: number) => {
+    setTimeout(() => {
+      markerRefs[markerIndex]?.current?.hideCallout();
+      markerRefs[markerIndex]?.current?.showCallout();
+    }, 200);
+  }
+
+  const onCalloutPress = (markerIndex: number) => {
+    dispatch(loadPhotos(mapState.photoMarkers));
+    dispatch(openPhotoCarousel(markerIndex));
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -28,22 +42,22 @@ const Map = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (photoState.loadedOwnPhotos.length > 0) {
-        if (photoState.photoMarkers.length !== photoState.loadedOwnPhotos.length) {
-          const markers = photoState.loadedOwnPhotos.filter((photo) => photo.longitude && photo.latitude);
+      if (ownPhotos.length > 0) {
+        if (mapState.photoMarkers.length !== ownPhotos.length) {
+          const markers = ownPhotos.filter((photo) => photo.longitude && photo.latitude);
           dispatch(loadMarkers(markers));
         }
       }
-    }, [photoState.loadedOwnPhotos])
+    }, [ownPhotos])
   );
 
   useEffect(() => {
     setMarkerRefs((markerRefs) =>
-      Array(photoState.photoMarkers.length)
+      Array(mapState.photoMarkers.length)
         .fill(0)
         .map((_, i) => markerRefs[i] || React.createRef())
     );
-  }, [photoState.photoMarkers.length]);
+  }, [mapState.photoMarkers.length]);
 
   useEffect(() => {
     if (isCarouselOpened) {
@@ -52,12 +66,12 @@ const Map = () => {
   }, [isCarouselOpened]);
 
   useEffect(() => {
-    if (photoState.loadedOwnPhotos.length === 0) {
-      dispatch(loadCurrentUserOwnPhotos());
+    if (ownPhotos.length === 0) {
+      dispatch(getOwnPhotos());
     }
   }, []);
 
-  const renderedMarkers = photoState.photoMarkers.map((photo, index) => {
+  const renderedMarkers = mapState.photoMarkers.map((photo, index) => {
     return (
       <Marker
         key={photo._id}
@@ -66,19 +80,9 @@ const Map = () => {
           latitude: photo.latitude,
           longitude: photo.longitude,
         }}
-        onPress={() => {
-          setTimeout(() => {
-            markerRefs[index]?.current?.hideCallout();
-            markerRefs[index]?.current?.showCallout();
-          }, 200);
-        }}
+        onPress={() => onMarkerPress(index)}
       >
-        <Callout
-          onPress={() => {
-            dispatch(loadPhotos(photoState.photoMarkers));
-            dispatch(openPhotoCarousel(index));
-          }}
-        >
+        <Callout onPress={() => onCalloutPress(index)}>
           <Svg style={styles.imageWrapper}>
             <ImageSVG
               width={'100%'}
@@ -92,7 +96,7 @@ const Map = () => {
     )
   });
 
-  return photoState.uploading ? <LoadingScreen /> : (
+  return photoUploading || mapState.loading ? <LoadingScreen /> : (
     <View style={styles.flex}>
       <StatusBar translucent />
       <MapView
@@ -115,7 +119,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderWidth: 1,
     borderColor: '#fff',
-  }
+  },
 });
 
 export default Map;
