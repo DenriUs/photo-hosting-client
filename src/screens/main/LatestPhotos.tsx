@@ -2,10 +2,9 @@ import React, { useCallback } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { changeCarouselMode, openPhotoCarousel } from '../../redux/slices/photoSlice';
-import { useEffect } from 'react';
+import { loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
 
-const LatestImages = () => {
+const LatestPhotos = () => {
   const ownPhotos = useAppSelector((state) => state.photo.loadedOwnPhotos);
   const dispatch = useAppDispatch();
 
@@ -16,11 +15,11 @@ const LatestImages = () => {
   const renderItem = useCallback(
     ({ item }) => (
       <TouchableOpacity onPress={() => {
-        dispatch(changeCarouselMode('own'));
+        dispatch(loadPhotos(data));
         dispatch(openPhotoCarousel(item.index));
       }}>
         <View style={styles.imageWrapper}>
-          <Image source={{ uri: item.hostUrl }} style={{ width: width / 3.05, height: width / 3 }} />
+          <Image resizeMethod='resize' source={{ uri: item.hostUrl }} style={{ width: width / 3, height: width / 3 }} />
         </View>
       </TouchableOpacity>
     ),
@@ -31,6 +30,8 @@ const LatestImages = () => {
     <BottomSheetFlatList
       showsVerticalScrollIndicator={false}
       numColumns={3}
+      initialNumToRender={20}
+      disableVirtualization={false}
       data={data}
       keyExtractor={(photo) => photo._id}
       renderItem={renderItem}
@@ -53,4 +54,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LatestImages;
+export default LatestPhotos;

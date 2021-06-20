@@ -2,8 +2,8 @@ import React from 'react';
 import { StyleSheet, useWindowDimensions } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import LatestImages from '../screens/main/LatestImages';
-import FeaturedImages from '../screens/main/FeaturedImages';
+import LatestPhotos from '../screens/main/LatestPhotos';
+import FeaturedPhotos from '../screens/main/FeaturedPhotos';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -31,15 +31,15 @@ const GalleryNavigator = () => {
         tabBarLabel: '',
         tabBarIcon: ({ color, focused }) => {
           let iconName: 'image-multiple' | 'image-multiple-outline' | 'star' | 'star-outline' = 'image-multiple';
-          if (route.name === 'FeaturedImages') {
+          if (route.name === 'FeaturedPhotos') {
             iconName = focused ? 'star' : 'star-outline';
           }
           return <MaterialCommunityIcons name={iconName} size={26} color={color} />
         }
       })}
     >
-      <Tab.Screen name='LatestImages' component={LatestImages} />
-      <Tab.Screen name='FeaturedImages' component={FeaturedImages} />
+      <Tab.Screen name='LatestPhotos' component={LatestPhotos} />
+      <Tab.Screen name='FeaturedPhotos' component={FeaturedPhotos} />
     </Tab.Navigator>
   );
 };

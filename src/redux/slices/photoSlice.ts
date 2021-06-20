@@ -1,96 +1,75 @@
 import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
-import { CarouselMode, PhotoState } from '../types';
+import { PhotoState } from '../types';
 import { Photo } from '../../api/entities';
 import { loadCurrentUserOwnPhotos, uploadPhoto } from '../../api/requests/photo';
 
 const initialState: PhotoState = {
   loadedOwnPhotos: [],
   photoMarkers: [],
-  currentPhotoIndex: 0,
-  currentlyViewedPhoto: null,
-  isCarouselOpened: false,
-  carouselMode: 'own',
-  api: {
-    loading: true,
-    lastResponseStatus: {
-      success: {
-        isRequestResult: false,
-        message: '',
-      },
-      error: {
-        isRequestResult: false,
-        message: '',
-        isServerError: false,
-      },
+  uploading: false,
+  loading: false,
+  lastResponseStatus: {
+    success: {
+      isRequestResult: false,
+      message: '',
     },
-  }
+    error: {
+      isRequestResult: false,
+      message: '',
+      isServerError: false,
+    },
+  },
 };
 
 const dropLastResponseStatus = (state: PhotoState) => {
-  state.api.lastResponseStatus = initialState.api.lastResponseStatus;
+  state.lastResponseStatus = initialState.lastResponseStatus;
 }
 
 const photoSlice = createSlice({
   name: 'photo',
   initialState,
   reducers: {
-    loadPhotos: (state, action: PayloadAction<Photo[]>) => {
-      state.loadedOwnPhotos = action.payload;
-    },
     loadMarkers: (state, action: PayloadAction<Photo[]>) => {
       state.photoMarkers = action.payload;
     },
-    changeCarouselMode: (state, action: PayloadAction<CarouselMode>) => {
-      state.carouselMode = action.payload;
-    },
-    openPhotoCarousel: (state, action: PayloadAction<number>) => {
-      state.isCarouselOpened = true;
-      state.currentPhotoIndex = action.payload;
-    },
-    closePhotoCarousel: (state) => {
-      state.isCarouselOpened = false;
-    },
-    openPhotoDetails: (state, action: PayloadAction<Photo>) => {
-      state.currentlyViewedPhoto = action.payload;
-    },
-    closePhotoDetails: (state) => {
-      state.currentlyViewedPhoto = null;
+    changeApiLoadingStatus: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder.addCase(uploadPhoto.fulfilled, (state, action: PayloadAction<Photo>) => {
-      state.api.loading = false;
-      state.api.lastResponseStatus.success.isRequestResult = true;
+      state.uploading = false;
+      state.lastResponseStatus.success.isRequestResult = true;
       state.loadedOwnPhotos.push(action.payload);
     });
     builder.addCase(loadCurrentUserOwnPhotos.fulfilled, (state, action: PayloadAction<Photo[]>) => {
-      state.api.loading = false;
-      state.api.lastResponseStatus.success.isRequestResult = true;
+      state.loading = false;
+      state.lastResponseStatus.success.isRequestResult = true;
       state.loadedOwnPhotos = action.payload;
     });
-    builder.addMatcher(isAnyOf(uploadPhoto.pending, loadCurrentUserOwnPhotos.pending), (state) => {
+    builder.addCase(uploadPhoto.pending, (state) => {
       dropLastResponseStatus(state);
-      state.api.loading = true;
+      state.uploading = true;
+    });
+    builder.addCase(loadCurrentUserOwnPhotos.pending, (state) => {
+      dropLastResponseStatus(state);
+      state.loading = true;
     });
     builder.addMatcher(isAnyOf(uploadPhoto.rejected, loadCurrentUserOwnPhotos.rejected), (state, action) => {
-      state.api.loading = false;
-      state.api.lastResponseStatus.error.isRequestResult = true;
+      state.uploading = false;
+      state.loading = false;
+      state.lastResponseStatus.error.isRequestResult = true;
       if (action.payload) {
-        state.api.lastResponseStatus.error.message = action.payload.error;
-        state.api.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
+        state.lastResponseStatus.error.message = action.payload.error;
+        state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
       }
     });
   },
 });
 
 export const {
-  loadPhotos,
   loadMarkers,
-  changeCarouselMode,
-  openPhotoCarousel,
-  closePhotoCarousel,
-  openPhotoDetails,
-  closePhotoDetails,
+  changeApiLoadingStatus,
 } = photoSlice.actions;
 
 export default photoSlice.reducer;

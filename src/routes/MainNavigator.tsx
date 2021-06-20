@@ -22,7 +22,7 @@ const MainNavigator = () => {
     }
   }, []);
 
-  return userState.api.loading ? <LoadingScreen /> : (
+  return userState.loading ? <LoadingScreen /> : (
     <>
       <DeviceMediaStorage />
       <MainTab.Navigator

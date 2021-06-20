@@ -1,8 +1,7 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
-import { StyleSheet, View, StatusBar, Image, Text } from 'react-native';
+import { StyleSheet, View, StatusBar, Image, Text, ImageBackground, RefreshControl } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { IconButton, Title } from 'react-native-paper';
-import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -17,6 +16,7 @@ import { jwtAsyncStorageKeyName } from '../../other/constants';
 const Profile = () => {
   const userState = useAppSelector((state) => state.user);
   const photoState = useAppSelector((state) => state.photo);
+  const isCarouselOpened = useAppSelector((state) => state.photoCarousel.isCarouselOpened);
   const dispatch = useAppDispatch();
 
   const navigation = useNavigation();
@@ -32,17 +32,17 @@ const Profile = () => {
   
   useFocusEffect(
     useCallback(() => {
-      if (photoState.api.loading) return;
-      StatusBar.setBackgroundColor('#f5e0ce');
-      StatusBar.setBarStyle('dark-content');
-    }, [photoState.api.loading])
+      if (photoState.uploading) return;
+      StatusBar.setBackgroundColor('rgba(0, 0, 0, 0.3)');
+      StatusBar.setBarStyle('light-content');
+    }, [photoState.uploading])
   );
 
   useEffect(() => {
-    if (photoState.isCarouselOpened) {
+    if (isCarouselOpened) {
       navigation.navigate('PhotoCarousel');
     }
-  }, [photoState.isCarouselOpened]);
+  }, [isCarouselOpened]);
 
   useEffect(() => {
     if (photoState.loadedOwnPhotos.length === 0) {
@@ -50,41 +50,53 @@ const Profile = () => {
     }
   }, []);
 
-  return photoState.api.loading ? <LoadingScreen /> : (
+  return photoState.uploading ? <LoadingScreen /> : (
     <SafeAreaView style={styles.flex}>
       <StatusBar translucent />
         <View style={styles.container}>
-          <View style={[styles.flex, styles.header]}>
-            <IconButton
-              icon='account-edit'
-              color='#3a2c3a'
-              size={28}
-              onPress={() => navigation.navigate('EditUser')}
-              style={styles.editButton}
-            />
-            <Title>Профіль</Title>
-            <IconButton
-              icon='logout'
-              color='#3a2c3a'
-              size={28}
-              onPress={logout}
-              style={styles.editButton}
-            />
-          </View>
-          <ScrollView
-            nestedScrollEnabled={true}
-            contentContainerStyle={styles.scrollViewContent}
-            style={styles.scrollView}
-          >
-            <View style={styles.profileWrapper}>
-              <View style={styles.profileContentWrapper}>
-                <View style={styles.profileImageWrapper}>
-                  <Image source={{ uri: 'https://picsum.photos/800/800?random=1' }} style={styles.profileImage} />
+          <ImageBackground resizeMode='cover' source={{ uri: 'https://picsum.photos/800/800?random=10' }} style={{ width: '100%', height: '100%' }}>
+            <ScrollView
+              contentContainerStyle={styles.scrollViewContent}
+              refreshControl={
+                <RefreshControl
+                  refreshing={photoState.loading}
+                  onRefresh={() => dispatch(loadCurrentUserOwnPhotos())}
+                  colors={['#3a2c3a', '#f7623c']}
+                />
+              }
+              style={styles.scrollView}
+            >
+              <View style={styles.profileContainer}>
+                <View style={styles.profileContentContainer}>
+                  <View style={{ flex: 1, height: '100%' }}>
+                    <IconButton
+                      icon='account-edit'
+                      color='#3a2c3a'
+                      size={28}
+                      onPress={() => navigation.navigate('EditUser')}
+                      style={styles.editButton}
+                    />
+                  </View>
+                  <View style={{ flex: 1, alignItems: 'center', top: '-15%' }}>
+                    <View style={styles.profileImageWrapper}>
+                      <Image source={{ uri: 'https://picsum.photos/800/800?random=1' }} style={styles.profileImage} />
+                    </View>
+                    <Title style={styles.loginText}>{userState.userData.login}</Title>
+                    <Text style={styles.emailText}>{userState.userData.email}</Text>
+                  </View>
+                  <View style={{ flex: 1, height: '100%', alignItems: 'flex-end' }}>
+                    <IconButton
+                      icon='logout'
+                      color='#3a2c3a'
+                      size={28}
+                      onPress={logout}
+                      style={styles.exitButton}
+                    />
+                  </View>
                 </View>
-                <Title style={styles.loginText}>{userState.userData.login}</Title>
               </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          </ImageBackground>
         </View>
         <View style={styles.flex}>
           <BottomSheet
@@ -113,13 +125,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f5e0ce',
   },
-  header: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'space-between',
-    marginTop: Constants.statusBarHeight,
-  },
   editButton: {
+    marginTop: 20,
+    marginLeft: 20,
+    zIndex: 1,
+  },
+  exitButton: {
+    marginTop: 20,
+    marginRight: 20,
     zIndex: 1,
   },
   scrollView: {
@@ -129,17 +142,18 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     height: '100%',
     justifyContent: 'flex-end',
-  },
-  profileWrapper: {
-    width: '100%',
     alignItems: 'center',
-    borderTopLeftRadius: 80,
-    borderTopRightRadius: 80,
+  },
+  profileContainer: {
+    width: '95%',
+    alignItems: 'center',
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
     backgroundColor: '#ffffff',
   },
-  profileContentWrapper: {
+  profileContentContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    top: '-15%',
   },
   profileImageWrapper: {
     borderWidth: 5,
@@ -155,6 +169,10 @@ const styles = StyleSheet.create({
   loginText: {
     fontSize: 25,
     color: '#3a2c3a',
+  },
+  emailText: {
+    fontSize: 17,
+    color: 'grey',
   },
 });
 

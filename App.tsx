@@ -6,6 +6,8 @@ import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-c
 import store from './src/redux/store';
 import AppNavigator from './src/routes/RootNavigator';
 
+import 'moment/locale/uk';
+
 const App = () => {
   const [appIsReady, setAppIsReady] = useState(false);
 

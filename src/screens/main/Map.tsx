@@ -5,10 +5,10 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Svg, Image as ImageSVG } from 'react-native-svg';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { converToDecimalDegrees } from '../../helpers/calculation';
-import { changeCarouselMode, loadMarkers, openPhotoCarousel } from '../../redux/slices/photoSlice';
+import { loadMarkers } from '../../redux/slices/photoSlice';
 import { loadCurrentUserOwnPhotos } from '../../api/requests/photo';
 import LoadingScreen from '../other/LoadingScreen';
+import { loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
 
 const Map = () => {
   const [markerRefs, setMarkerRefs] = useState<RefObject<Marker>[]>([]);
@@ -16,6 +16,7 @@ const Map = () => {
   const navigation = useNavigation();
 
   const photoState = useAppSelector((state) => state.photo);
+  const isCarouselOpened = useAppSelector((state) => state.photoCarousel.isCarouselOpened);
   const dispatch = useAppDispatch();
 
   useFocusEffect(
@@ -45,10 +46,10 @@ const Map = () => {
   }, [photoState.photoMarkers.length]);
 
   useEffect(() => {
-    if (photoState.isCarouselOpened) {
+    if (isCarouselOpened) {
       navigation.navigate('PhotoCarousel');
     }
-  }, [photoState.isCarouselOpened]);
+  }, [isCarouselOpened]);
 
   useEffect(() => {
     if (photoState.loadedOwnPhotos.length === 0) {
@@ -74,7 +75,7 @@ const Map = () => {
       >
         <Callout
           onPress={() => {
-            dispatch(changeCarouselMode('marker'));
+            dispatch(loadPhotos(photoState.photoMarkers));
             dispatch(openPhotoCarousel(index));
           }}
         >
@@ -91,7 +92,7 @@ const Map = () => {
     )
   });
 
-  return photoState.api.loading ? <LoadingScreen /> : (
+  return photoState.uploading ? <LoadingScreen /> : (
     <View style={styles.flex}>
       <StatusBar translucent />
       <MapView

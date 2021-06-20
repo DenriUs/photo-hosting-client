@@ -1,8 +1,7 @@
-import React, { useCallback, useMemo } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useAppDispatch } from '../../hooks/redux';
-import { openPhotoDetails } from '../../redux/slices/photoSlice';
 
 const FeaturedPhotos = () => {
   const dispatch = useAppDispatch();

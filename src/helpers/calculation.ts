@@ -10,3 +10,7 @@ export const normalizeHeight = (
   height: number,
   fontScale: number
 ): number => height + (height * fontScale - height) / 3;
+
+export const getDateTime = (dateString: string) => {
+  return dateString.replace(':', '-').replace(':', '-');
+}

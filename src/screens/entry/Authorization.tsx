@@ -217,7 +217,7 @@ const Authorization = () => {
         compact={true}
         color='#3a2c3a'
         uppercase={false}
-        disabled={authState.api.loading}
+        disabled={authState.loading}
         contentStyle={{ height: normalizeHeight(20, fontScale) }}
         labelStyle={styles.forgotPasswordButtonLabel}
         onPress={onForgoPasswordPress}
@@ -234,8 +234,8 @@ const Authorization = () => {
         mode='contained'
         color='#3a2c3a'
         uppercase={false}
-        disabled={authState.api.loading}
-        loading={authState.api.loading}
+        disabled={authState.loading}
+        loading={authState.loading}
         onPress={onSubmitButtonPress}
         labelStyle={styles.submitButtonLabel}
         style={styles.submitButton}
@@ -251,13 +251,13 @@ const Authorization = () => {
     <SafeAreaView style={styles.flex}>
       <StatusBar translucent />
       <SuccessModal
-        isVisible={!!authState.api.lastResponseStatus.success.message}
-        text={authState.api.lastResponseStatus.success.message}
+        isVisible={!!authState.lastResponseStatus.success.message}
+        text={authState.lastResponseStatus.success.message}
         onBackdropPress={closeSuccessModal}
         onCloseButtonPress={closeSuccessModal}
       />
       <ErrorModal
-        isVisible={authState.api.lastResponseStatus.error.isServerError}
+        isVisible={authState.lastResponseStatus.error.isServerError}
         text='Нам дуже шкода, але сталася невідома помилка.'
         onBackdropPress={() => dispatch(cleanUpLastResponseStatus())}
         onCloseButtonPress={() => dispatch(cleanUpLastResponseStatus())}
@@ -282,12 +282,12 @@ const Authorization = () => {
           <Animated.View style={{ width: modalWidth, height: modalHeight, ...styles.modal }}>
             {authState.authModalState !== 'FORGOT_PASSWORD' && renderTobTabBar()}
             {renderCurrentModalForm()}
-            {authState.api.lastResponseStatus.error.isRequestResult &&
-              !authState.api.lastResponseStatus.error.isServerError &&
-                !!authState.api.lastResponseStatus.error.message && (
+            {authState.lastResponseStatus.error.isRequestResult &&
+              !authState.lastResponseStatus.error.isServerError &&
+                !!authState.lastResponseStatus.error.message && (
                   <View style={{ width: '90%', alignSelf: 'center', alignItems: 'center' }}>
                     <Text style={{ fontSize: 12.5, color: '#f7623c' }}>
-                      {authState.api.lastResponseStatus.error.message}
+                      {authState.lastResponseStatus.error.message}
                     </Text>
                   </View>
                 )

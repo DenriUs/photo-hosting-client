@@ -1,12 +1,14 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { ImagePickerResult, StyleSheet } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { View } from 'react-native';
 import { useAppDispatch } from '../../hooks/redux';
 import { uploadPhoto } from '../../api/requests/photo';
-import * as ImageManipulator from 'expo-image-manipulator';
 import { ExifData } from '../../other/types';
+import { changeApiLoadingStatus } from '../../redux/slices/photoSlice';
+import { getDateTime } from '../../helpers/calculation';
+import moment from 'moment';
 
 const DeviceMediaStorage = () => {
   const dispatch = useAppDispatch();
@@ -20,7 +22,7 @@ const DeviceMediaStorage = () => {
     return true;
   }
 
-  const getImage = async () => {
+  const loadImage = async () => {
     if (!await checkMediaLibraryPermission()) {
       alert('Для завантаження зображень потрібно надати дозвіл.');
       return;
@@ -43,6 +45,9 @@ const DeviceMediaStorage = () => {
       latitude: result.exif?.GPSLatitude,
       longitude: result.exif?.GPSLongitude,
     }
+    if (exifData.creationDate.indexOf('T') === -1) {
+      exifData.creationDate = getDateTime(exifData.creationDate);
+    }
     dispatch(uploadPhoto({ uri: result.uri, exifData }));
   }
 
@@ -52,7 +57,7 @@ const DeviceMediaStorage = () => {
         icon='plus'
         size={40}
         color='#ffffff'
-        onPress={getImage}
+        onPress={loadImage}
         style={styles.button}
       />
     </View>
