@@ -1,5 +1,14 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import { FlatList, Image, StatusBar, View, ViewToken, StyleSheet, Text } from 'react-native';
+import {
+  FlatList,
+  Image,
+  StatusBar,
+  View,
+  ViewToken,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+} from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { LinearGradient, LinearGradientPoint } from 'expo-linear-gradient';
@@ -11,11 +20,12 @@ import { Photo } from '../../api/entities';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import {
   changeCurrentlyViwedPhoto,
-  changeOpenedPhotoIndex,
   closePhotoCarousel,
 } from '../../redux/slices/photoCarouselSlice';
 import { useEffect } from 'react';
 import { openLocationPickerMap, setLocationPickerMapMarker } from '../../redux/slices/mapSlice';
+import { addFavoritePhoto, removeFavoritePhoto } from '../../api/requests/photo';
+import { addFavoritePhotoId, removeFavoritePhotoId } from '../../redux/slices/userSlice';
 
 const PhotoCarousel = () => {
   const { width } = useSafeAreaFrame();
@@ -32,15 +42,17 @@ const PhotoCarousel = () => {
     ((info: { viewableItems: ViewToken[]; changed: ViewToken[] }) => void) | null | undefined
   >(({ changed }) => {
     bottomSheetRef.current?.snapTo(0);
-    dispatch(changeOpenedPhotoIndex(changed[0].index || 0));
+    dispatch(changeCurrentlyViwedPhoto(loadedPhotos[changed[0].index || 0]));
   });
-  const viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 50 })
+  const viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 50 });
 
+  const currentUserId = useAppSelector((state) => state.user.userData.id);
+  const favoritePhotoIds = useAppSelector((state) => state.user.userData.favoritePhotoIds);
   const loadedPhotos = useAppSelector((state) => state.photoCarousel.loadedPhotos);
   const openedPhotoIndex = useAppSelector((state) => state.photoCarousel.openedPhotoIndex);
   const currentlyViewedPhoto = useAppSelector((state) => state.photoCarousel.currentlyViewedPhoto);
   const isLocationPicketMapOpened = useAppSelector(
-    (state) => state.map.locationPickerMapState.isOpened,
+    (state) => state.map.locationPickerMapState.isOpened
   );
   const dispatch = useAppDispatch();
 
@@ -51,31 +63,52 @@ const PhotoCarousel = () => {
   });
 
   const renderItem = useCallback(
-    ({ item }) => <Image resizeMode='contain' source={{ uri: item.hostUrl }} style={{ width }} />,
-    [],
+    ({ item }) => <Image resizeMode="contain" source={{ uri: item.hostUrl }} style={{ width }} />,
+    []
   );
 
   const onHeaderBackActionPress = () => {
     navigation.goBack();
-  }
+  };
+
+  const onFavoriteButtonPress = () => {
+    if (currentlyViewedPhoto) {
+      dispatch(addFavoritePhotoId(currentlyViewedPhoto._id));
+      dispatch(
+        addFavoritePhoto({ userId: currentUserId, favoritePhotoId: currentlyViewedPhoto._id })
+      );
+    }
+  };
+
+  const onUnFavoriteButtonPress = () => {
+    if (currentlyViewedPhoto) {
+      if (favoritePhotoIds.indexOf(currentlyViewedPhoto._id || '') !== -1) {
+        dispatch(removeFavoritePhotoId(currentlyViewedPhoto._id));
+        dispatch(
+          removeFavoritePhoto({ userId: currentUserId, favoritePhotoId: currentlyViewedPhoto._id })
+        );
+      }
+    }
+  };
 
   const onDetailsButtonPress = () => {
-    dispatch(changeCurrentlyViwedPhoto(loadedPhotos[openedPhotoIndex]));
     bottomSheetRef.current?.snapTo(1);
-  }
+  };
 
   const onViewPhotoLocationPress = () => {
     if (!currentlyViewedPhoto) return;
-    dispatch(setLocationPickerMapMarker({
-      longitude: currentlyViewedPhoto.longitude,
-      latitude: currentlyViewedPhoto.latitude,
-    }));
+    dispatch(
+      setLocationPickerMapMarker({
+        longitude: currentlyViewedPhoto.longitude,
+        latitude: currentlyViewedPhoto.latitude,
+      })
+    );
     dispatch(openLocationPickerMap('VIEW'));
-  }
+  };
 
   const onAddPhotoLocationPress = () => {
     dispatch(openLocationPickerMap('NEW'));
-  }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -94,8 +127,7 @@ const PhotoCarousel = () => {
   const renderBottomSheetHandleComponent = () => (
     <View style={styles.bottomSheetHeader}>
       <View style={styles.panelHeader}>
-        <View style={styles.panelHandle}>
-        </View>
+        <View style={styles.panelHandle}></View>
       </View>
     </View>
   );
@@ -109,25 +141,22 @@ const PhotoCarousel = () => {
           </Title>
         </View>
       )}
-      {(currentlyViewedPhoto?.latitude && currentlyViewedPhoto?.longitude) && (
+      {currentlyViewedPhoto?.latitude && currentlyViewedPhoto?.longitude && (
         <Button
-          icon='map-marker-outline'
+          icon="map-marker-outline"
           uppercase={false}
           onPress={onViewPhotoLocationPress}
           color={'#f7623c'}
           contentStyle={{ right: 2.5 }}
-          style={{ alignSelf: 'flex-start', marginTop: 25, marginLeft: 10 }}
-        >
-          <Text style={{ color: '#f7623c', letterSpacing: 0.5 }}>
-            Переглянути на карті
-          </Text>
+          style={{ alignSelf: 'flex-start', marginTop: 25, marginLeft: 10 }}>
+          <Text style={{ color: '#f7623c', letterSpacing: 0.5 }}>Переглянути на карті</Text>
         </Button>
       )}
       <View>
         <Title style={styles.photoInfoTitle}>Інформація про фото:</Title>
       </View>
       <View style={styles.photoDetailsContainer}>
-        <MaterialCommunityIcons name='image-outline' size={35} color='rgba(0, 0, 0, 0.5)' />
+        <MaterialCommunityIcons name="image-outline" size={35} color="rgba(0, 0, 0, 0.5)" />
         <View style={styles.photoDetailsWrapper}>
           <Text>{currentlyViewedPhoto?.originalName}</Text>
           <View style={styles.photoDetails}>
@@ -139,13 +168,19 @@ const PhotoCarousel = () => {
       </View>
       {currentlyViewedPhoto?.cameraModel && (
         <View style={styles.cameraDetailsContainer}>
-          <MaterialCommunityIcons name='camera-outline' size={35} color='rgba(0, 0, 0, 0.5)' />
+          <MaterialCommunityIcons name="camera-outline" size={35} color="rgba(0, 0, 0, 0.5)" />
           <View style={styles.cameraDetailsWrapper}>
             <Text>{currentlyViewedPhoto.cameraModel}</Text>
             <View style={styles.cameraDetails}>
-              <Text style={styles.firstCameraDetailsElement}>ƒ/{currentlyViewedPhoto.apertureValue}</Text>
-              <Text style={styles.nextCameraDetailsElement}>{currentlyViewedPhoto.exposureTime}</Text>
-              <Text style={styles.nextCameraDetailsElement}>{currentlyViewedPhoto.focalLenght} мм</Text>
+              <Text style={styles.firstCameraDetailsElement}>
+                ƒ/{currentlyViewedPhoto.apertureValue}
+              </Text>
+              <Text style={styles.nextCameraDetailsElement}>
+                {currentlyViewedPhoto.exposureTime}
+              </Text>
+              <Text style={styles.nextCameraDetailsElement}>
+                {currentlyViewedPhoto.focalLenght} мм
+              </Text>
               <Text style={styles.nextCameraDetailsElement}>ISO{currentlyViewedPhoto.iso}</Text>
             </View>
           </View>
@@ -153,16 +188,13 @@ const PhotoCarousel = () => {
       )}
       {(!currentlyViewedPhoto?.latitude || !currentlyViewedPhoto?.longitude) && (
         <Button
-          icon='map-marker-outline'
+          icon="map-marker-outline"
           uppercase={false}
           onPress={onAddPhotoLocationPress}
           color={'#f7623c'}
           contentStyle={{ right: 2.5 }}
-          style={{ alignSelf: 'flex-start', marginTop: 25, marginLeft: 10 }}
-        >
-          <Text style={{ color: '#f7623c', letterSpacing: 0.5 }}>
-            Додати місце зйомки
-          </Text>
+          style={{ alignSelf: 'flex-start', marginTop: 25, marginLeft: 10 }}>
+          <Text style={{ color: '#f7623c', letterSpacing: 0.5 }}>Додати місце зйомки</Text>
         </Button>
       )}
     </View>
@@ -173,10 +205,14 @@ const PhotoCarousel = () => {
       <StatusBar translucent />
       <View style={styles.headerWrapper}>
         <Appbar.Header style={styles.header}>
-          <Appbar.BackAction color='#ffffff' onPress={onHeaderBackActionPress}
-          />
-          <Appbar.Content title='' />
-          <Appbar.Action icon='dots-vertical' color='#ffffff' onPress={onDetailsButtonPress} />
+          <Appbar.BackAction color="#ffffff" onPress={onHeaderBackActionPress} />
+          <Appbar.Content title="" />
+          {favoritePhotoIds.indexOf(currentlyViewedPhoto?._id || '') !== -1 ? (
+            <Appbar.Action icon="star" color="#ffffff" onPress={onUnFavoriteButtonPress} />
+          ) : (
+            <Appbar.Action icon="star-outline" color="#ffffff" onPress={onFavoriteButtonPress} />
+          )}
+          <Appbar.Action icon="dots-vertical" color="#ffffff" onPress={onDetailsButtonPress} />
         </Appbar.Header>
       </View>
       <LinearGradient
@@ -245,7 +281,7 @@ const styles = StyleSheet.create({
   panelHeader: {
     alignItems: 'center',
     justifyContent: 'center',
-    height: 20
+    height: 20,
   },
   panelHandle: {
     width: 35,

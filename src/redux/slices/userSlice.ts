@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User } from '../../api/entities';
+import { Photo, User } from '../../api/entities';
+import { addFavoritePhoto } from '../../api/requests/photo';
 import { loadCurrentUserData } from '../../api/requests/user';
 import { UserState } from '../types';
 
@@ -9,6 +10,7 @@ const initialState: UserState = {
     id: '',
     login: '',
     email: '',
+    favoritePhotoIds: [],
   },
   loading: false,
   lastResponseStatus: {
@@ -26,12 +28,21 @@ const initialState: UserState = {
 
 const dropLastResponseStatus = (state: UserState) => {
   state.lastResponseStatus = initialState.lastResponseStatus;
-}
+};
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
+    addFavoritePhotoId: (state, action: PayloadAction<string>) => {
+      state.userData.favoritePhotoIds.push(action.payload);
+    },
+    removeFavoritePhotoId: (state, action: PayloadAction<string>) => {
+      const favoritePhotoIdIndex = state.userData.favoritePhotoIds.indexOf(action.payload);
+      if (favoritePhotoIdIndex !== -1) {
+        state.userData.favoritePhotoIds.splice(favoritePhotoIdIndex, 1);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(loadCurrentUserData.fulfilled, (state, action: PayloadAction<User>) => {
@@ -53,10 +64,22 @@ const userSlice = createSlice({
       dropLastResponseStatus(state);
       state.loading = true;
     });
+    builder.addCase(addFavoritePhoto.rejected, (state, action) => {
+      state.lastResponseStatus.error.isRequestResult = true;
+      if (action.payload) {
+        state.lastResponseStatus.error.message = action.payload.error;
+        state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
+      }
+      const favoritePhotoIdIndex = state.userData.favoritePhotoIds.indexOf(
+        action.payload?.favoritePhotoId || ''
+      );
+      if (favoritePhotoIdIndex !== -1) {
+        state.userData.favoritePhotoIds.splice(favoritePhotoIdIndex, 1);
+      }
+    });
   },
 });
 
-export const {
-} = userSlice.actions;
+export const { addFavoritePhotoId, removeFavoritePhotoId } = userSlice.actions;
 
 export default userSlice.reducer;

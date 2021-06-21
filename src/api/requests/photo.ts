@@ -51,6 +51,53 @@ export const getOwnPhotos = createAsyncThunk<
   return response.data;
 });
 
+export const addFavoritePhoto = createAsyncThunk<
+  any,
+  { userId: string, favoritePhotoId: string },
+  { rejectValue: { error: string, isServerError?: boolean, favoritePhotoId: string } }
+>('photo/addFavorite', async (data, { rejectWithValue }) => {
+  const response = await sendPostRequest('/photo/addFavorite', data);
+  if (response.error) {
+    return rejectWithValue({
+      error: response.error.message,
+      isServerError: response.error.isServerError,
+      favoritePhotoId: data.favoritePhotoId,
+    });
+  }
+  return response.data;
+});
+
+export const removeFavoritePhoto = createAsyncThunk<
+  any,
+  { userId: string, favoritePhotoId: string },
+  { rejectValue: { error: string, isServerError?: boolean, favoritePhotoId: string } }
+>('photo/removeFavorite', async (data, { rejectWithValue }) => {
+  const response = await sendPostRequest('/photo/removeFavorite', data);
+  if (response.error) {
+    return rejectWithValue({
+      error: response.error.message,
+      isServerError: response.error.isServerError,
+      favoritePhotoId: data.favoritePhotoId,
+    });
+  }
+  return response.data;
+});
+
+export const getFavoritePhotos = createAsyncThunk<
+  any,
+  void,
+  { rejectValue: RejectedValue }
+>('photo/getFavoritePhotos', async (_void, { rejectWithValue }) => {
+  const response = await sendGetRequest('/photo/getFavoritePhotos');
+  if (response.error) {
+    return rejectWithValue({
+      error: response.error.message,
+      isServerError: response.error.isServerError,
+    });
+  }
+  return response.data;
+});
+
 export const updatePhoto = createAsyncThunk<
   any,
   { id: string, latitude: number, longitude: number },

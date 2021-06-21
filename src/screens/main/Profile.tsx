@@ -1,5 +1,13 @@
 import React, { useEffect, useCallback, useMemo, useRef } from 'react';
-import { StyleSheet, View, StatusBar, Image, Text, ImageBackground, RefreshControl } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  StatusBar,
+  Image,
+  Text,
+  ImageBackground,
+  RefreshControl,
+} from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { IconButton, Title } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,8 +36,8 @@ const Profile = () => {
   const logout = async () => {
     await AsyncStorage.setItem(jwtAsyncStorageKeyName, '');
     dispatch(logoutAccount());
-  }
-  
+  };
+
   useFocusEffect(
     useCallback(() => {
       if (photoState.uploading) return;
@@ -50,67 +58,73 @@ const Profile = () => {
     }
   }, []);
 
-  return photoState.uploading ? <LoadingScreen /> : (
+  return photoState.uploading ? (
+    <LoadingScreen />
+  ) : (
     <SafeAreaView style={styles.flex}>
       <StatusBar translucent />
-        <View style={styles.container}>
-          <ImageBackground resizeMode='cover' source={{ uri: 'https://picsum.photos/800/800?random=10' }} style={{ width: '100%', height: '100%' }}>
-            <ScrollView
-              contentContainerStyle={styles.scrollViewContent}
-              refreshControl={
-                <RefreshControl
-                  refreshing={photoState.loading}
-                  onRefresh={() => dispatch(getOwnPhotos())}
-                  colors={['#3a2c3a', '#f7623c']}
-                />
-              }
-              style={styles.scrollView}
-            >
-              <View style={styles.profileContainer}>
-                <View style={styles.profileContentContainer}>
-                  <View style={{ flex: 1, height: '100%' }}>
-                    <IconButton
-                      icon='account-edit'
-                      color='#3a2c3a'
-                      size={28}
-                      onPress={() => navigation.navigate('EditUser')}
-                      style={styles.editButton}
+      <View style={styles.container}>
+        <ImageBackground
+          resizeMode="cover"
+          source={{ uri: 'https://picsum.photos/800/800?random=10' }}
+          style={{ width: '100%', height: '100%' }}>
+          <ScrollView
+            contentContainerStyle={styles.scrollViewContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={photoState.loading}
+                onRefresh={() => dispatch(getOwnPhotos())}
+                colors={['#3a2c3a', '#f7623c']}
+              />
+            }
+            style={styles.scrollView}>
+            <View style={styles.profileContainer}>
+              <View style={styles.profileContentContainer}>
+                <View style={{ flex: 1, height: '100%' }}>
+                  <IconButton
+                    icon="account-edit"
+                    color="#3a2c3a"
+                    size={28}
+                    onPress={() => navigation.navigate('EditUser')}
+                    style={styles.editButton}
+                  />
+                </View>
+                <View style={{ flex: 1, alignItems: 'center', top: '-15%' }}>
+                  <View style={styles.profileImageWrapper}>
+                    <Image
+                      source={{ uri: 'https://picsum.photos/800/800?random=1' }}
+                      style={styles.profileImage}
                     />
                   </View>
-                  <View style={{ flex: 1, alignItems: 'center', top: '-15%' }}>
-                    <View style={styles.profileImageWrapper}>
-                      <Image source={{ uri: 'https://picsum.photos/800/800?random=1' }} style={styles.profileImage} />
-                    </View>
-                    <Title style={styles.loginText}>{userState.userData.login}</Title>
-                    <Text style={styles.emailText}>{userState.userData.email}</Text>
-                  </View>
-                  <View style={{ flex: 1, height: '100%', alignItems: 'flex-end' }}>
-                    <IconButton
-                      icon='logout'
-                      color='#3a2c3a'
-                      size={28}
-                      onPress={logout}
-                      style={styles.exitButton}
-                    />
-                  </View>
+                  <Title style={styles.loginText}>{userState.userData.login}</Title>
+                  <Text style={styles.emailText}>{userState.userData.email}</Text>
+                </View>
+                <View style={{ flex: 1, height: '100%', alignItems: 'flex-end' }}>
+                  <IconButton
+                    icon="logout"
+                    color="#3a2c3a"
+                    size={28}
+                    onPress={logout}
+                    style={styles.exitButton}
+                  />
                 </View>
               </View>
-            </ScrollView>
-          </ImageBackground>
-        </View>
-        <View style={styles.flex}>
-          <BottomSheet
-            ref={bottomSheetRef}
-            index={0}
-            snapPoints={snapPoints}
-            overDragResistanceFactor={0}
-            handleComponent={() => null}
-          >
-            <GalleryNavigator />
-          </BottomSheet>
-        </View>
+            </View>
+          </ScrollView>
+        </ImageBackground>
+      </View>
+      <View style={styles.flex}>
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={0}
+          snapPoints={snapPoints}
+          overDragResistanceFactor={0}
+          handleComponent={() => null}>
+          <GalleryNavigator />
+        </BottomSheet>
+      </View>
     </SafeAreaView>
-  )
+  );
 };
 
 const styles = StyleSheet.create({

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { LocationPickerMapMode, LocationPickerMapState, MapState, PhotoCarouselState } from '../types';
+import { LocationPickerMapMode, MapState } from '../types';
 import { Photo } from '../../api/entities';
 import { State } from 'react-native-gesture-handler';
 import { LatLng } from 'react-native-maps';
@@ -7,11 +7,16 @@ import { updatePhoto } from '../../api/requests/photo';
 
 const initialState: MapState = {
   photoMarkers: [],
+  mode: 'MARKER',
+  photosType: 'OWN',
   locationPickerMapState: {
     markerLatLng: null,
     mode: 'VIEW',
+    loading: false,
+    autoClose: false,
     isOpened: false,
   },
+  isFocused: false,
   loading: false,
   lastResponseStatus: {
     success: {
@@ -26,9 +31,9 @@ const initialState: MapState = {
   },
 };
 
-const dropLastResponseStatus = (state: PhotoCarouselState) => {
+const dropLastResponseStatus = (state: MapState) => {
   state.lastResponseStatus = initialState.lastResponseStatus;
-}
+};
 
 const mapSlice = createSlice({
   name: 'map',
@@ -47,11 +52,18 @@ const mapSlice = createSlice({
     },
     setLocationPickerMapMarker: (state, action: PayloadAction<LatLng | null>) => {
       state.locationPickerMapState.markerLatLng = action.payload;
-    }
+    },
+    toggleMapFocused: (state, action: PayloadAction<boolean>) => {
+      state.isFocused = action.payload;
+    },
+    toggleLocationPickerMapAutoClosing: (state, action: PayloadAction<boolean>) => {
+      state.locationPickerMapState.autoClose = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(updatePhoto.fulfilled, (state) => {
-      state.loading = false;
+      state.locationPickerMapState.loading = false;
+      state.locationPickerMapState.autoClose = true;
       state.lastResponseStatus.success.isRequestResult = true;
     });
     builder.addCase(updatePhoto.rejected, (state, action) => {
@@ -63,9 +75,10 @@ const mapSlice = createSlice({
       }
     });
     builder.addCase(updatePhoto.pending, (state) => {
-      state.loading = false;
+      dropLastResponseStatus(state);
+      state.locationPickerMapState.loading = true;
     });
-  }
+  },
 });
 
 export const {
@@ -73,6 +86,8 @@ export const {
   openLocationPickerMap,
   closeLocationPickerMap,
   setLocationPickerMapMarker,
+  toggleMapFocused,
+  toggleLocationPickerMapAutoClosing,
 } = mapSlice.actions;
 
 export default mapSlice.reducer;

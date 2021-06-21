@@ -2,13 +2,13 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-import Map from '../screens/main/Map';
 import DeviceMediaStorage from '../screens/main/DeviceMediaStorage';
 import ProfileNavigator from './ProfileNavigator';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { loadCurrentUserData } from '../api/requests/user';
 import LoadingScreen from '../screens/other/LoadingScreen';
+import MapWindow from '../screens/main/MapWindow';
 
 const MainTab = createMaterialBottomTabNavigator();
 
@@ -49,8 +49,8 @@ const MainNavigator = () => {
         })}
       >
         <MainTab.Screen
-          name='Map'
-          component={Map}
+          name='MapWindow'
+          component={MapWindow}
         />
         <MainTab.Screen
           name='Profile'

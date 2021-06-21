@@ -4,9 +4,14 @@ import MapView, { Callout, MapEvent, Marker, PROVIDER_GOOGLE } from 'react-nativ
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { Appbar, Button } from 'react-native-paper';
-import { closeLocationPickerMap, setLocationPickerMapMarker } from '../../redux/slices/mapSlice';
+import {
+  closeLocationPickerMap,
+  setLocationPickerMapMarker,
+  toggleLocationPickerMapAutoClosing,
+} from '../../redux/slices/mapSlice';
 import { updatePhoto } from '../../api/requests/photo';
 import { Svg, Image as ImageSVG } from 'react-native-svg';
+import { useEffect } from 'react';
 
 const LocationPickerMap = () => {
   const navigation = useNavigation();
@@ -15,10 +20,9 @@ const LocationPickerMap = () => {
     (state) => state.photoCarousel.currentlyViewedPhoto?._id
   );
   const currentViwedPhotoUrl = useAppSelector(
-    (state) => state.photoCarousel.currentlyViewedPhoto?.hostUrl,
+    (state) => state.photoCarousel.currentlyViewedPhoto?.hostUrl
   );
   const locationPickerMapState = useAppSelector((state) => state.map.locationPickerMapState);
-  const loading = useAppSelector((state) => state.map.loading);
   const dispatch = useAppDispatch();
 
   const onHeaderBackActionPress = () => {
@@ -38,7 +42,7 @@ const LocationPickerMap = () => {
       !locationPickerMapState.markerLatLng?.longitude
     ) {
       return;
-    } 
+    }
     dispatch(
       updatePhoto({
         id: currentViwedPhotoId,
@@ -54,6 +58,13 @@ const LocationPickerMap = () => {
       return () => dispatch(closeLocationPickerMap());
     }, [])
   );
+
+  useEffect(() => {
+    if (locationPickerMapState.autoClose) {
+      dispatch(toggleLocationPickerMapAutoClosing(false));
+      navigation.navigate('MainNavigator', { screen: 'MapWindow' });
+    }
+  }, [locationPickerMapState.autoClose]);
 
   return (
     <View style={styles.flex}>
@@ -72,12 +83,11 @@ const LocationPickerMap = () => {
         rotateEnabled={false}
         provider={PROVIDER_GOOGLE}
         style={styles.flex}
-        {...locationPickerMapState.mode === 'NEW' && { onPress: onMapViewPress }}>
+        {...(locationPickerMapState.mode === 'NEW' && { onPress: onMapViewPress })}>
         {locationPickerMapState.markerLatLng && (
           <Marker
             coordinate={locationPickerMapState.markerLatLng}
-            {...locationPickerMapState.mode === 'NEW' && { onPress: onMarkerPress}}
-          >
+            {...(locationPickerMapState.mode === 'NEW' && { onPress: onMarkerPress })}>
             {locationPickerMapState.mode === 'VIEW' && (
               <Callout>
                 <Svg style={styles.imageWrapper}>
@@ -106,12 +116,11 @@ const LocationPickerMap = () => {
             mode="contained"
             uppercase={false}
             color="#ffffff"
-            loading={loading}
-            disabled={loading}
+            loading={locationPickerMapState.loading}
+            disabled={locationPickerMapState.loading}
             contentStyle={{ height: 50 }}
             style={{ width: '100%' }}
-            onPress={onSaveLatLngPress}
-          >
+            onPress={onSaveLatLngPress}>
             <Text style={{ color: '#3a2c3a', letterSpacing: 0.5 }}>Зберегти</Text>
           </Button>
         </View>

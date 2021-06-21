@@ -36,9 +36,6 @@ const photoCarouselSlice = createSlice({
     changeApiLoadingStatus: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    changeOpenedPhotoIndex: (state, action: PayloadAction<number>) => {
-      state.openedPhotoIndex = action.payload;
-    },
     changeCurrentlyViwedPhoto: (state, action: PayloadAction<Photo>) => {
       state.currentlyViewedPhoto = action.payload;
     },
@@ -64,7 +61,6 @@ const photoCarouselSlice = createSlice({
 export const {
   loadPhotos,
   changeApiLoadingStatus,
-  changeOpenedPhotoIndex,
   changeCurrentlyViwedPhoto,
   openPhotoCarousel,
   closePhotoCarousel,

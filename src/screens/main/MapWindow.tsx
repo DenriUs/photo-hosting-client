@@ -8,18 +8,30 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { getOwnPhotos } from '../../api/requests/photo';
 import LoadingScreen from '../other/LoadingScreen';
 import { loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
-import { loadMarkers } from '../../redux/slices/mapSlice';
+import { loadMarkers, toggleMapFocused } from '../../redux/slices/mapSlice';
+import { Photo } from '../../api/entities';
+import { PhotosType } from '../../redux/types';
 
-const Map = () => {
+const MapWindow = () => {
   const [markerRefs, setMarkerRefs] = useState<RefObject<Marker>[]>([]);
 
   const navigation = useNavigation();
 
   const mapState = useAppSelector((state) => state.map);
+
   const ownPhotos = useAppSelector((state) => state.photo.ownPhotos);
+  const favoritePhotos = useAppSelector((state) => state.photo.favoritesPhotos);
+  const accessPhotos = useAppSelector((state) => state.photo.accessPhotos);
+
   const photoUploading = useAppSelector((state) => state.photo.uploading);
+
   const isCarouselOpened = useAppSelector((state) => state.photoCarousel.isCarouselOpened);
   const dispatch = useAppDispatch();
+
+  let photosTypeToLoad = new Map<PhotosType, Photo[]>();
+  photosTypeToLoad.set('OWN', ownPhotos);
+  photosTypeToLoad.set('FAVORITE', favoritePhotos);
+  photosTypeToLoad.set('ACCESS', accessPhotos);
 
   const onMarkerPress = (markerIndex: number) => {
     setTimeout(() => {
@@ -35,20 +47,21 @@ const Map = () => {
 
   useFocusEffect(
     useCallback(() => {
+      dispatch(toggleMapFocused(true));
       StatusBar.setBackgroundColor('rgba(0, 0, 0, 0.3)');
       StatusBar.setBarStyle('light-content');
+      return () => dispatch(toggleMapFocused(false));
     }, [])
   );
 
   useFocusEffect(
     useCallback(() => {
-      if (ownPhotos.length > 0) {
-        if (mapState.photoMarkers.length !== ownPhotos.length) {
-          const markers = ownPhotos.filter((photo) => photo.longitude && photo.latitude);
-          dispatch(loadMarkers(markers));
-        }
+      let photosToFilter: Photo[] = photosTypeToLoad.get(mapState.photosType) || [];
+      if (mapState.photoMarkers.length !== photosToFilter.length) {
+        const markers = photosToFilter.filter((photo) => photo.longitude && photo.latitude);
+        dispatch(loadMarkers(markers));
       }
-    }, [ownPhotos])
+    }, [ownPhotos, favoritePhotos])
   );
 
   useEffect(() => {
@@ -96,7 +109,7 @@ const Map = () => {
     )
   });
 
-  return photoUploading || mapState.loading ? <LoadingScreen /> : (
+  return (photoUploading || mapState.loading) && mapState.isFocused ? <LoadingScreen /> : (
     <View style={styles.flex}>
       <StatusBar translucent />
       <MapView
@@ -122,4 +135,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Map;
+export default MapWindow;

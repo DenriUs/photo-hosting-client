@@ -2,6 +2,7 @@ export interface User {
   id: string;
   login: string;
   email: string;
+  favoritePhotoIds: string[];
 }
 
 export interface Photo {

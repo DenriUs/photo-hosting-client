@@ -1,17 +1,19 @@
-import React, { useCallback } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect } from 'react';
+import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Image } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { changeCurrentlyViwedPhoto, loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
-import { useEffect } from 'react';
+import { getFavoritePhotos } from '../../api/requests/photo';
+import { useFocusEffect } from '@react-navigation/native';
 
-const LatestPhotos = () => {
-  const ownPhotos = useAppSelector((state) => state.photo.ownPhotos);
+const FavoritePhotos = () => {
+  const areFavoritePhotosLoaded = useAppSelector((state) => state.photo.areFavoritePhotosLoaded);
+  const favoritesPhotos = useAppSelector((state) => state.photo.favoritesPhotos);
   const dispatch = useAppDispatch();
 
   const { width } = useWindowDimensions();
 
-  const data = ownPhotos.map((photo, index) => ({ index, ...photo }));
+  const data = favoritesPhotos.map((photo, index) => ({ index, ...photo }));
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -25,7 +27,15 @@ const LatestPhotos = () => {
         </View>
       </TouchableOpacity>
     ),
-    [],
+    [areFavoritePhotosLoaded, favoritesPhotos],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!areFavoritePhotosLoaded) {
+        dispatch(getFavoritePhotos());
+      }
+    }, [areFavoritePhotosLoaded])
   );
 
   return (
@@ -56,4 +66,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LatestPhotos;
+export default FavoritePhotos;
