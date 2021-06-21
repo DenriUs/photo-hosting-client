@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Image } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { changeCurrentlyViwedPhoto, loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
+import { changeCarouselMode, changeCurrentlyViwedPhoto, loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
 import { getFavoritePhotos } from '../../api/requests/photo';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -20,6 +20,7 @@ const FavoritePhotos = () => {
       <TouchableOpacity onPress={() => {
         dispatch(loadPhotos(data));
         dispatch(changeCurrentlyViwedPhoto(data[item.index]));
+        dispatch(changeCarouselMode('FAVORITE'));
         dispatch(openPhotoCarousel(item.index));
       }}>
         <View style={styles.imageWrapper}>

@@ -98,6 +98,21 @@ export const getFavoritePhotos = createAsyncThunk<
   return response.data;
 });
 
+export const getAccessedPhotos = createAsyncThunk<
+  any,
+  void,
+  { rejectValue: RejectedValue }
+>('photo/getAccessedPhotos', async (_void, { rejectWithValue }) => {
+  const response = await sendGetRequest('/photo/getAccessedPhotos');
+  if (response.error) {
+    return rejectWithValue({
+      error: response.error.message,
+      isServerError: response.error.isServerError,
+    });
+  }
+  return response.data;
+});
+
 export const updatePhoto = createAsyncThunk<
   any,
   { id: string, latitude: number, longitude: number },

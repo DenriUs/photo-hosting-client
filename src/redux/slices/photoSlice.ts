@@ -3,6 +3,7 @@ import { PhotoState } from '../types';
 import { Photo } from '../../api/entities';
 import {
   addFavoritePhoto,
+  getAccessedPhotos,
   getFavoritePhotos,
   getOwnPhotos,
   removeFavoritePhoto,
@@ -13,9 +14,9 @@ import {
 const initialState: PhotoState = {
   ownPhotos: [],
   favoritesPhotos: [],
-  accessPhotos: [],
+  accessedPhotos: [],
   areFavoritePhotosLoaded: false,
-  areAccessPhotosLoaded: false,
+  areAccessedPhotosLoaded: false,
   uploading: false,
   loading: false,
   lastResponseStatus: {
@@ -50,11 +51,10 @@ const photoSlice = createSlice({
       state.ownPhotos.push(action.payload);
     });
     builder.addCase(updatePhoto.fulfilled, (state, action: PayloadAction<Photo>) => {
-      state.ownPhotos.push({
-        ...action.payload,
-        longitude: action.payload.longitude,
-        latitude: action.payload.latitude,
-      });
+      const photoIndex = state.ownPhotos.findIndex((photo) => photo._id === action.payload._id );
+      if (photoIndex !== - 1) {
+        state.ownPhotos[photoIndex] = action.payload;
+      }
     });
     builder.addCase(addFavoritePhoto.fulfilled, (state, action: PayloadAction<Photo>) => {
       state.lastResponseStatus.success.isRequestResult = true;
@@ -78,16 +78,30 @@ const photoSlice = createSlice({
       state.areFavoritePhotosLoaded = true;
       state.lastResponseStatus.success.isRequestResult = true;
     });
+    builder.addCase(getAccessedPhotos.fulfilled, (state, action: PayloadAction<Photo[]>) => {
+      state.loading = false;
+      state.accessedPhotos = action.payload;
+      state.areAccessedPhotosLoaded = true;
+      state.lastResponseStatus.success.isRequestResult = true;
+    });
     builder.addCase(uploadPhoto.pending, (state) => {
       dropLastResponseStatus(state);
       state.uploading = true;
     });
-    builder.addMatcher(isAnyOf(getOwnPhotos.pending, getFavoritePhotos.pending), (state) => {
-      dropLastResponseStatus(state);
-      state.loading = true;
-    });
     builder.addMatcher(
-      isAnyOf(uploadPhoto.rejected, getOwnPhotos.rejected, getFavoritePhotos.rejected),
+      isAnyOf(getOwnPhotos.pending, getFavoritePhotos.pending, getAccessedPhotos.pending),
+      (state) => {
+        dropLastResponseStatus(state);
+        state.loading = true;
+      }
+    );
+    builder.addMatcher(
+      isAnyOf(
+        uploadPhoto.rejected,
+        getOwnPhotos.rejected,
+        getFavoritePhotos.rejected,
+        getAccessedPhotos.rejected
+      ),
       (state, action) => {
         state.uploading = false;
         state.loading = false;

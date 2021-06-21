@@ -63,7 +63,7 @@ const PhotoCarousel = () => {
   });
 
   const renderItem = useCallback(
-    ({ item }) => <Image resizeMode="contain" source={{ uri: item.hostUrl }} style={{ width }} />,
+    ({ item }) => <Image resizeMode='contain' source={{ uri: item.hostUrl }} style={{ width }} />,
     []
   );
 
@@ -143,7 +143,7 @@ const PhotoCarousel = () => {
       )}
       {currentlyViewedPhoto?.latitude && currentlyViewedPhoto?.longitude && (
         <Button
-          icon="map-marker-outline"
+          icon='map-marker-outline'
           uppercase={false}
           onPress={onViewPhotoLocationPress}
           color={'#f7623c'}
@@ -156,7 +156,7 @@ const PhotoCarousel = () => {
         <Title style={styles.photoInfoTitle}>Інформація про фото:</Title>
       </View>
       <View style={styles.photoDetailsContainer}>
-        <MaterialCommunityIcons name="image-outline" size={35} color="rgba(0, 0, 0, 0.5)" />
+        <MaterialCommunityIcons name='image-outline' size={35} color='rgba(0, 0, 0, 0.5)' />
         <View style={styles.photoDetailsWrapper}>
           <Text>{currentlyViewedPhoto?.originalName}</Text>
           <View style={styles.photoDetails}>
@@ -168,7 +168,7 @@ const PhotoCarousel = () => {
       </View>
       {currentlyViewedPhoto?.cameraModel && (
         <View style={styles.cameraDetailsContainer}>
-          <MaterialCommunityIcons name="camera-outline" size={35} color="rgba(0, 0, 0, 0.5)" />
+          <MaterialCommunityIcons name='camera-outline' size={35} color='rgba(0, 0, 0, 0.5)' />
           <View style={styles.cameraDetailsWrapper}>
             <Text>{currentlyViewedPhoto.cameraModel}</Text>
             <View style={styles.cameraDetails}>
@@ -188,7 +188,7 @@ const PhotoCarousel = () => {
       )}
       {(!currentlyViewedPhoto?.latitude || !currentlyViewedPhoto?.longitude) && (
         <Button
-          icon="map-marker-outline"
+          icon='map-marker-outline'
           uppercase={false}
           onPress={onAddPhotoLocationPress}
           color={'#f7623c'}
@@ -205,14 +205,14 @@ const PhotoCarousel = () => {
       <StatusBar translucent />
       <View style={styles.headerWrapper}>
         <Appbar.Header style={styles.header}>
-          <Appbar.BackAction color="#ffffff" onPress={onHeaderBackActionPress} />
-          <Appbar.Content title="" />
+          <Appbar.BackAction color='#ffffff' onPress={onHeaderBackActionPress} />
+          <Appbar.Content title='' />
           {favoritePhotoIds.indexOf(currentlyViewedPhoto?._id || '') !== -1 ? (
-            <Appbar.Action icon="star" color="#ffffff" onPress={onUnFavoriteButtonPress} />
+            <Appbar.Action icon='star' color='#ffffff' onPress={onUnFavoriteButtonPress} />
           ) : (
-            <Appbar.Action icon="star-outline" color="#ffffff" onPress={onFavoriteButtonPress} />
+            <Appbar.Action icon='star-outline' color='#ffffff' onPress={onFavoriteButtonPress} />
           )}
-          <Appbar.Action icon="dots-vertical" color="#ffffff" onPress={onDetailsButtonPress} />
+          <Appbar.Action icon='dots-vertical' color='#ffffff' onPress={onDetailsButtonPress} />
         </Appbar.Header>
       </View>
       <LinearGradient

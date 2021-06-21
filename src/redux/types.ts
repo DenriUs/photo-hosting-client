@@ -46,9 +46,9 @@ export interface UserState {
 export interface PhotoState {
   ownPhotos: Photo[];
   favoritesPhotos: Photo[];
-  accessPhotos: Photo[];
+  accessedPhotos: Photo[];
   areFavoritePhotosLoaded: boolean;
-  areAccessPhotosLoaded: boolean;
+  areAccessedPhotosLoaded: boolean;
   uploading: boolean;
   loading: boolean;
   lastResponseStatus: ResponseStatusState;
@@ -58,6 +58,7 @@ export interface PhotoCarouselState {
   loadedPhotos: Photo[];
   openedPhotoIndex: number;
   currentlyViewedPhoto: Photo | null;
+  carouselMode: PhotosType;
   isCarouselOpened: boolean;
   loading: boolean;
   lastResponseStatus: ResponseStatusState;

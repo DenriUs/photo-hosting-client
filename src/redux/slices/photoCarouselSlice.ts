@@ -1,12 +1,12 @@
-import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
-import { PhotoCarouselState } from '../types';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { PhotoCarouselState, PhotosType } from '../types';
 import { Photo } from '../../api/entities';
-import { uploadPhoto } from '../../api/requests/photo';
 
 const initialState: PhotoCarouselState = {
   loadedPhotos: [],
   openedPhotoIndex: 0,
   currentlyViewedPhoto: null,
+  carouselMode: 'OWN',
   isCarouselOpened: false,
   loading: false,
   lastResponseStatus: {
@@ -39,6 +39,9 @@ const photoCarouselSlice = createSlice({
     changeCurrentlyViwedPhoto: (state, action: PayloadAction<Photo>) => {
       state.currentlyViewedPhoto = action.payload;
     },
+    changeCarouselMode: (state, action: PayloadAction<PhotosType>) => {
+      state.carouselMode = action.payload;
+    },
     openPhotoCarousel: (state, action: PayloadAction<number>) => {
       state.isCarouselOpened = true;
       state.openedPhotoIndex = action.payload;
@@ -62,6 +65,7 @@ export const {
   loadPhotos,
   changeApiLoadingStatus,
   changeCurrentlyViwedPhoto,
+  changeCarouselMode,
   openPhotoCarousel,
   closePhotoCarousel,
   openPhotoDetails,

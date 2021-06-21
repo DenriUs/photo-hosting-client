@@ -21,7 +21,7 @@ const MapWindow = () => {
 
   const ownPhotos = useAppSelector((state) => state.photo.ownPhotos);
   const favoritePhotos = useAppSelector((state) => state.photo.favoritesPhotos);
-  const accessPhotos = useAppSelector((state) => state.photo.accessPhotos);
+  const accessPhotos = useAppSelector((state) => state.photo.accessedPhotos);
 
   const photoUploading = useAppSelector((state) => state.photo.uploading);
 

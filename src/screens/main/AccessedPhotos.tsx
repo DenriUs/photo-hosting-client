@@ -1,24 +1,26 @@
-import React, { useCallback } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
+import React, { useCallback, useEffect } from 'react';
+import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Image } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { changeCarouselMode, changeCurrentlyViwedPhoto, loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
-import { useEffect } from 'react';
+import { getAccessedPhotos } from '../../api/requests/photo';
+import { useFocusEffect } from '@react-navigation/native';
 
-const LatestPhotos = () => {
-  const ownPhotos = useAppSelector((state) => state.photo.ownPhotos);
+const AccessedPhotos = () => {
+  const areAccessedPhotosLoaded = useAppSelector((state) => state.photo.areAccessedPhotosLoaded);
+  const accessedPhotos = useAppSelector((state) => state.photo.accessedPhotos);
   const dispatch = useAppDispatch();
 
   const { width } = useWindowDimensions();
 
-  const data = ownPhotos.map((photo, index) => ({ index, ...photo }));
+  const data = accessedPhotos.map((photo, index) => ({ index, ...photo }));
 
   const renderItem = useCallback(
     ({ item }) => (
       <TouchableOpacity onPress={() => {
         dispatch(loadPhotos(data));
         dispatch(changeCurrentlyViwedPhoto(data[item.index]));
-        dispatch(changeCarouselMode('OWN'));
+        dispatch(changeCarouselMode('ACCESS'));
         dispatch(openPhotoCarousel(item.index));
       }}>
         <View style={styles.imageWrapper}>
@@ -26,7 +28,15 @@ const LatestPhotos = () => {
         </View>
       </TouchableOpacity>
     ),
-    [],
+    [areAccessedPhotosLoaded, accessedPhotos],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!areAccessedPhotosLoaded) {
+        dispatch(getAccessedPhotos());
+      }
+    }, [areAccessedPhotosLoaded])
   );
 
   return (
@@ -57,4 +67,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LatestPhotos;
+export default AccessedPhotos;
