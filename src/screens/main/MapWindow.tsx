@@ -11,8 +11,14 @@ import Constants from 'expo-constants';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { getAccessedPhotos, getFavoritePhotos, getOwnPhotos } from '../../api/requests/photo';
 import LoadingScreen from '../other/LoadingScreen';
-import { loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
-import { changeMapMode, changePhotosType, loadMarkers, toggleMapFocused, toggleMapOptions } from '../../redux/slices/mapSlice';
+import { changeCarouselMode, changeCurrentlyViwedPhoto, loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
+import {
+  changeMapMode,
+  changePhotosType,
+  loadMarkers,
+  toggleMapFocused,
+  toggleMapOptions,
+} from '../../redux/slices/mapSlice';
 import { Photo } from '../../api/entities';
 import { PhotosType } from '../../redux/types';
 
@@ -32,9 +38,13 @@ const MapWindow = () => {
   const photoUploading = useAppSelector((state) => state.photo.uploading);
 
   const isCarouselOpened = useAppSelector((state) => state.photoCarousel.isCarouselOpened);
+  const carouselMode = useAppSelector((state) => state.photoCarousel.carouselMode);
   const dispatch = useAppDispatch();
 
-  const heatPoints = mapState.photoMarkers.map((photo) => ({ longitude: photo.longitude, latitude: photo.latitude }));
+  const heatPoints = mapState.photoMarkers.map((photo) => ({
+    longitude: photo.longitude,
+    latitude: photo.latitude,
+  }));
 
   const photosTypeToLoad = new Map<PhotosType, Photo[]>();
   photosTypeToLoad.set('OWN', ownPhotos);
@@ -50,6 +60,7 @@ const MapWindow = () => {
 
   const onCalloutPress = (markerIndex: number) => {
     dispatch(loadPhotos(mapState.photoMarkers));
+    dispatch(changeCurrentlyViwedPhoto(mapState.photoMarkers[markerIndex]));
     dispatch(openPhotoCarousel(markerIndex));
   };
 
@@ -71,20 +82,11 @@ const MapWindow = () => {
         } else if (mapState.photosType === 'ACCESS') {
           dispatch(getAccessedPhotos());
         }
-        return;
       }
-      if (mapState.photoMarkers.length !== photosToFilter.length) {
-        const markers = photosToFilter.filter((photo) => photo.longitude && photo.latitude);
-        dispatch(loadMarkers(markers));
-      }
+      const markers = photosToFilter.filter((photo) => photo.longitude && photo.latitude);
+      dispatch(loadMarkers(markers));
     }, [ownPhotos, favoritePhotos, accessPhotos, mapState.photosType])
   );
-
-  const points = [
-    { latitude: 40.7828, longitude: -74.0065 },
-    { latitude: 41.7121, longitude: -74.0042 },
-    { latitude: 40.7102, longitude: -75.0060 },
-  ];
 
   useEffect(() => {
     setMarkerRefs((markerRefs) =>
@@ -99,6 +101,10 @@ const MapWindow = () => {
       navigation.navigate('PhotoCarousel');
     }
   }, [isCarouselOpened]);
+
+  useEffect(() => {
+    dispatch(changeCarouselMode(mapState.photosType));
+  }, [mapState.photosType])
 
   useEffect(() => {
     if (ownPhotos.length === 0) {
@@ -126,8 +132,7 @@ const MapWindow = () => {
         </Svg>
       </Callout>
     </Marker>
-    )
-  );
+  ));
 
   return (photoUploading || mapState.loading) && mapState.isFocused ? (
     <LoadingScreen />
@@ -135,83 +140,116 @@ const MapWindow = () => {
     <View style={styles.flex}>
       <StatusBar translucent />
       <MapView rotateEnabled={false} provider={PROVIDER_GOOGLE} style={styles.flex}>
-        {mapState.mode === 'MARKER' ? renderedMarkers : heatPoints.length !== 0 && (
-          <Heatmap
-            points={heatPoints}
-            radius={40}
-            opacity={1}
-          >
-          </Heatmap>
-        )}
+        {mapState.mode === 'MARKER'
+          ? renderedMarkers
+          : heatPoints.length !== 0 && (
+              <Heatmap points={heatPoints} radius={40} opacity={1}></Heatmap>
+            )}
       </MapView>
       <View style={[StyleSheet.absoluteFill, { marginTop: Constants.statusBarHeight }]}>
-        <IconButton icon='cog' style={{ backgroundColor: '#ffffff' }} size={25} onPress={() => dispatch(toggleMapOptions(true))} />
+        <IconButton
+          icon="cog"
+          style={{ backgroundColor: '#ffffff' }}
+          size={25}
+          onPress={() => dispatch(toggleMapOptions(true))}
+        />
         <Modal
           isVisible={mapState.isOptionsOpened}
-          animationIn='fadeInUpBig'
-          animationOut='fadeOut'
+          animationIn="fadeInUpBig"
+          animationOut="fadeOut"
           statusBarTranslucent
           backdropTransitionOutTiming={0}
-          onBackdropPress={() => dispatch(toggleMapOptions(false))}
-        >
-          <View style={{ width: '100%', height: '40%', alignItems: 'center', justifyContent: 'center', borderRadius: 10, backgroundColor: '#ffffff' }}>
-            <View style={{ height: '50%', width: '100%', alignItems: 'center', justifyContent: 'flex-start', }}>
+          onBackdropPress={() => dispatch(toggleMapOptions(false))}>
+          <View
+            style={{
+              width: '100%',
+              height: '40%',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 10,
+              backgroundColor: '#ffffff',
+            }}>
+            <View
+              style={{
+                height: '50%',
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+              }}>
               <Title style={{ marginTop: 30 }}>Режим відображення:</Title>
-              <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
+              <View
+                style={{
+                  width: '100%',
+                  flexDirection: 'row',
+                  justifyContent: 'space-around',
+                  marginTop: 20,
+                }}>
                 <View style={{ alignItems: 'center' }}>
                   <Text style={{ fontWeight: 'bold' }}>Маркер</Text>
                   <RadioButton
-                    value='marker'
+                    value="marker"
                     status={mapState.mode === 'MARKER' ? 'checked' : 'unchecked'}
-                    color='#f7623c'
+                    color="#f7623c"
                     onPress={() => dispatch(changeMapMode('MARKER'))}
                   />
                 </View>
                 <View style={{ alignItems: 'center' }}>
                   <Text style={{ fontWeight: 'bold' }}>Теплова мітка</Text>
                   <RadioButton
-                    value='heatPoint'
+                    value="heatPoint"
                     status={mapState.mode === 'HEAT' ? 'checked' : 'unchecked'}
-                    color='#f7623c'
+                    color="#f7623c"
                     onPress={() => dispatch(changeMapMode('HEAT'))}
                   />
                 </View>
               </View>
             </View>
             <Divider style={{ width: '100%' }} />
-            <View style={{ height: '50%', width: '100%', alignItems: 'center', justifyContent: 'flex-start', }}>
+            <View
+              style={{
+                height: '50%',
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+              }}>
               <Title style={{ marginTop: 30 }}>Фільтр фото:</Title>
-              <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-around', marginTop: 20 }}>
+              <View
+                style={{
+                  width: '100%',
+                  flexDirection: 'row',
+                  justifyContent: 'space-around',
+                  marginTop: 20,
+                }}>
                 <View style={{ alignItems: 'center' }}>
                   <Text style={{ fontWeight: 'bold' }}>Власні</Text>
                   <RadioButton
-                    value='own'
+                    value="own"
                     status={mapState.photosType === 'OWN' ? 'checked' : 'unchecked'}
-                    color='#f7623c'
+                    color="#f7623c"
                     onPress={() => dispatch(changePhotosType('OWN'))}
                   />
                 </View>
                 <View style={{ alignItems: 'center' }}>
                   <Text style={{ fontWeight: 'bold' }}>Обрані</Text>
                   <RadioButton
-                    value='favorite'
+                    value="favorite"
                     status={mapState.photosType === 'FAVORITE' ? 'checked' : 'unchecked'}
-                    color='#f7623c'
+                    color="#f7623c"
                     onPress={() => dispatch(changePhotosType('FAVORITE'))}
                   />
                 </View>
                 <View style={{ alignItems: 'center' }}>
                   <Text style={{ fontWeight: 'bold' }}>Доступні</Text>
                   <RadioButton
-                    value='accessed'
+                    value="accessed"
                     status={mapState.photosType === 'ACCESS' ? 'checked' : 'unchecked'}
-                    color='#f7623c'
+                    color="#f7623c"
                     onPress={() => dispatch(changePhotosType('ACCESS'))}
                   />
                 </View>
               </View>
             </View>
-          </View>  
+          </View>
         </Modal>
       </View>
     </View>

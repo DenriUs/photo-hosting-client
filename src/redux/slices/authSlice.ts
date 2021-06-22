@@ -1,12 +1,21 @@
 import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import { AuthModalState, AuthState } from '../types';
-import { loginAccount, registerAccount } from '../../api/requests/authorization';
+import {
+  generateResetPasswordCode,
+  loginAccount,
+  registerAccount,
+  resetPassword,
+  verifyResetPasswordCode,
+} from '../../api/requests/authorization';
 import { loadCurrentUserData } from '../../api/requests/user';
 
 const initialState: AuthState = {
   authModalState: 'LOGIN',
   isAuthStatusChecked: false,
   modalOffset: 0,
+  resetCode: '',
+  resetEmail: '',
+  isResetCodeModalVisible: false,
   isAuthorized: false,
   authScreenReplaceAnimationType: 'push',
   loading: true,
@@ -25,7 +34,7 @@ const initialState: AuthState = {
 
 const dropLastResponseStatus = (state: AuthState) => {
   state.lastResponseStatus = initialState.lastResponseStatus;
-}
+};
 
 const authSlice = createSlice({
   name: 'auth',
@@ -47,6 +56,12 @@ const authSlice = createSlice({
     cleanUpLastResponseStatus: (state) => {
       state.lastResponseStatus = initialState.lastResponseStatus;
     },
+    addResetEmail: (state, action: PayloadAction<string>) => {
+      state.resetEmail = action.payload;
+    },
+    addResetCode: (state, action: PayloadAction<string>) => {
+      state.resetCode = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(loadCurrentUserData.fulfilled, (state) => {
@@ -67,6 +82,23 @@ const authSlice = createSlice({
       state.lastResponseStatus.success.isRequestResult = true;
       state.lastResponseStatus.success.message = 'Обліковий запис зареєстровано успішно.';
     });
+    builder.addCase(generateResetPasswordCode.fulfilled, (state) => {
+      state.loading = false;
+      state.lastResponseStatus.success.isRequestResult = true;
+      state.authModalState = 'RESET_CODE';
+    });
+    builder.addCase(verifyResetPasswordCode.fulfilled, (state) => {
+      state.loading = false;
+      state.lastResponseStatus.success.isRequestResult = true;
+      state.authModalState = 'NEW_PASSWORD';
+    });
+    builder.addCase(resetPassword.fulfilled, (state) => {
+      state.loading = false;
+      state.resetCode = '';
+      state.resetEmail = '';
+      state.lastResponseStatus.success.isRequestResult = true;
+      state.lastResponseStatus.success.message = 'Тепер ви можете увійти з вашим новим паролем.';
+    });
     builder.addCase(loadCurrentUserData.rejected, (state, action) => {
       state.loading = false;
       state.isAuthStatusChecked = true;
@@ -76,8 +108,26 @@ const authSlice = createSlice({
         state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
       }
     });
+    builder.addCase(generateResetPasswordCode.rejected, (state, action) => {
+      state.resetEmail = '';
+      state.loading = false;
+      state.lastResponseStatus.error.isRequestResult = true;
+      if (action.payload) {
+        state.lastResponseStatus.error.message = action.payload.error;
+        state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
+      }
+    });
+    builder.addCase(verifyResetPasswordCode.rejected, (state, action) => {
+      state.resetCode = '';
+      state.loading = false;
+      state.lastResponseStatus.error.isRequestResult = true;
+      if (action.payload) {
+        state.lastResponseStatus.error.message = action.payload.error;
+        state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
+      }
+    });
     builder.addMatcher(
-      isAnyOf(loginAccount.rejected, registerAccount.rejected),
+      isAnyOf(loginAccount.rejected, registerAccount.rejected, resetPassword.rejected),
       (state, action) => {
         state.loading = false;
         state.lastResponseStatus.error.isRequestResult = true;
@@ -85,23 +135,32 @@ const authSlice = createSlice({
           state.lastResponseStatus.error.message = action.payload.error;
           state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
         }
-      },
+      }
     );
     builder.addMatcher(
-      isAnyOf(loadCurrentUserData.pending, loginAccount.pending, registerAccount.pending),
+      isAnyOf(
+        loadCurrentUserData.pending,
+        loginAccount.pending,
+        registerAccount.pending,
+        generateResetPasswordCode.pending,
+        verifyResetPasswordCode.pending,
+        resetPassword.pending
+      ),
       (state) => {
         dropLastResponseStatus(state);
         state.loading = true;
-      },
+      }
     );
   },
 });
 
 export const {
-  changeAuthModalState, 
+  changeAuthModalState,
   changeModalOffset,
   logoutAccount,
   cleanUpLastResponseStatus,
+  addResetEmail,
+  addResetCode,
 } = authSlice.actions;
 
 export default authSlice.reducer;

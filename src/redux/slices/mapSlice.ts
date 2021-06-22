@@ -7,7 +7,7 @@ import { updatePhoto } from '../../api/requests/photo';
 
 const initialState: MapState = {
   photoMarkers: [],
-  mode: 'HEAT',
+  mode: 'MARKER',
   photosType: 'OWN',
   isOptionsOpened: false,
   locationPickerMapState: {

@@ -11,27 +11,38 @@ import {
   ScrollView,
   PixelRatio,
 } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, IconButton, Title } from 'react-native-paper';
 import Constants from 'expo-constants';
 import { FormikProps } from 'formik';
-import { SafeAreaView } from 'react-native-safe-area-context'
+import Modal from 'react-native-modal';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import TopTabBar from '../../components/tabBars/TopTabBar';
 import LoginForm from '../../components/forms/LoginForm';
 import RegisterForm from '../../components/forms/RegisterForm';
 import ForgotPasswordForm from '../../components/forms/ForgotPasswordForm';
 import CustomHeader from '../../components/headers/CustomHeader';
 import { getPercentageFromNumber, normalizeHeight } from '../../helpers/calculation';
-import { appLogo } from '../../other/constants';
-import { loginAccount, registerAccount } from '../../api/requests/authorization';
+import { appLogo, FORM_ICON_SIZE } from '../../other/constants';
+import {
+  generateResetPasswordCode,
+  loginAccount,
+  registerAccount,
+  resetPassword,
+  verifyResetPasswordCode,
+} from '../../api/requests/authorization';
 import SuccessModal from '../../components/modals/SuccessModal';
 import ErrorModal from '../../components/modals/ErrorModal';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { AuthModalStateConfig } from '../../other/types';
 import {
+  addResetCode,
+  addResetEmail,
   changeAuthModalState,
   changeModalOffset,
-  cleanUpLastResponseStatus
+  cleanUpLastResponseStatus,
 } from '../../redux/slices/authSlice';
+import ResetCodeForm from '../../components/forms/ResetCodeForm';
+import NewPasswordForm from '../../components/forms/NewPasswordForm';
 
 const LOGIN_MODAL_HEIGHT = 305;
 const REGISTER_MODAL_HEIGHT = 378;
@@ -45,10 +56,11 @@ const registerTabName = 'Реєстрація';
 const loginSubmitName = 'Увійти';
 const registerSubmitName = 'Зареєструватися';
 const forgotPassowrdSubmitName = 'Відправити код';
+const verifyResetPasswordCodeSubmitName = 'Перевірити код';
+const newPasswordSubmtiName = 'Змінити пароль';
 
 const Authorization = () => {
   const authState = useAppSelector((state) => state.auth);
-  const userState = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
 
   const formikRef = useRef<FormikProps<{}>>(null);
@@ -75,16 +87,26 @@ const Authorization = () => {
     formikRef.current && formikRef.current.submitForm();
   };
 
-  const onLoginSubmit = async (values: { login: string, password: string }) => {
+  const onLoginSubmit = async (values: { login: string; password: string }) => {
     dispatch(loginAccount(values));
   };
 
-  const onRegisterSubmit = async (values: { login: string, email: string, password: string }) => {
+  const onRegisterSubmit = async (values: { login: string; email: string; password: string }) => {
     dispatch(registerAccount(values));
   };
 
   const onForgotPasswordSubmit = async (values: { email: string }) => {
-    // dispatch(loginAccount(values));
+    dispatch(addResetEmail(values.email));
+    dispatch(generateResetPasswordCode(values));
+  };
+
+  const onResetCodeSubmit = async (values: { code: string }) => {
+    dispatch(addResetCode(values.code));
+    dispatch(verifyResetPasswordCode({ email: authState.resetEmail, ...values }));
+  };
+
+  const onNewPasswordSubmit = async (values: { newPassword: string }) => {
+    dispatch(resetPassword({ email: authState.resetEmail, code: authState.resetCode, ...values }));
   };
 
   const onBackActionPress = () => {
@@ -101,7 +123,7 @@ const Authorization = () => {
     dispatch(cleanUpLastResponseStatus());
     dispatch(changeAuthModalState('LOGIN'));
     topTabBarRef.current?.switchTab(0);
-  }
+  };
 
   const authModalStateConfigs: AuthModalStateConfig[] = [
     {
@@ -125,25 +147,58 @@ const Authorization = () => {
       render: (
         <>
           <CustomHeader
-            title='Відновлення паролю'
-            backActionIcon='chevron-left'
+            title="Відновлення паролю"
+            backActionIcon="chevron-left"
             onBackActionPress={onBackActionPress}
           />
           <ForgotPasswordForm ref={formikRef} onSubmit={onForgotPasswordSubmit} />
         </>
-      )
+      ),
+    },
+    {
+      authModalState: 'RESET_CODE',
+      submitName: verifyResetPasswordCodeSubmitName,
+      modalHeigh: normalizedForgotPasswordHeight,
+      render: (
+        <>
+          <CustomHeader
+            title="Відновлення паролю"
+            backActionIcon="chevron-left"
+            onBackActionPress={onBackActionPress}
+          />
+          <ResetCodeForm ref={formikRef} onSubmit={onResetCodeSubmit} />
+        </>
+      ),
+    },
+    {
+      authModalState: 'NEW_PASSWORD',
+      submitName: newPasswordSubmtiName,
+      modalHeigh: normalizedForgotPasswordHeight,
+      render: (
+        <>
+          <CustomHeader
+            title="Відновлення паролю"
+            backActionIcon="chevron-left"
+            onBackActionPress={onBackActionPress}
+          />
+          <NewPasswordForm ref={formikRef} onSubmit={onNewPasswordSubmit} />
+        </>
+      ),
     },
   ];
 
   const getCurrentModalStateConfig = (): AuthModalStateConfig | undefined => {
     return authModalStateConfigs.find(
-      (config) => config.authModalState === authState.authModalState,
+      (config) => config.authModalState === authState.authModalState
     );
   };
 
   const getTopTabBarConfigs = (): AuthModalStateConfig[] => {
     return authModalStateConfigs.filter(
-      (config) => config.authModalState !== 'FORGOT_PASSWORD',
+      (config) =>
+        config.authModalState !== 'FORGOT_PASSWORD' &&
+        config.authModalState !== 'RESET_CODE' &&
+        config.authModalState !== 'NEW_PASSWORD'
     );
   };
 
@@ -152,10 +207,7 @@ const Authorization = () => {
     dispatch(changeAuthModalState(getTopTabBarConfigs()[tabIndex].authModalState));
   };
 
-  const runModalHeightAnimation = (
-    height: number,
-    duration: number = MODAL_ANIMATION_DURATION,
-  ) => {
+  const runModalHeightAnimation = (height: number, duration: number = MODAL_ANIMATION_DURATION) => {
     Animated.timing(modalHeight, {
       toValue: height,
       duration,
@@ -166,7 +218,7 @@ const Authorization = () => {
   useEffect(() => {
     StatusBar.setBackgroundColor('transparent');
     StatusBar.setBarStyle('dark-content');
-    
+
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', (event) => {
       const scrollViewOffset = getPercentageFromNumber(height, 7.2);
       const openedKeyboardScreenHeight =
@@ -176,7 +228,7 @@ const Authorization = () => {
         event.endCoordinates.height +
         scrollViewOffset;
       const calculatedOffset = height - openedKeyboardScreenHeight;
-      dispatch(changeModalOffset((calculatedOffset < 0 ? calculatedOffset : 0)));
+      dispatch(changeModalOffset(calculatedOffset < 0 ? calculatedOffset : 0));
     });
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
       dispatch(changeModalOffset(0));
@@ -215,14 +267,13 @@ const Authorization = () => {
       }}>
       <Button
         compact={true}
-        color='#3a2c3a'
+        color="#3a2c3a"
         uppercase={false}
         disabled={authState.loading}
         contentStyle={{ height: normalizeHeight(20, fontScale) }}
         labelStyle={styles.forgotPasswordButtonLabel}
         onPress={onForgoPasswordPress}
-        style={styles.forgotPasswordButton}
-      >
+        style={styles.forgotPasswordButton}>
         <Text>Забули пароль?</Text>
       </Button>
     </View>
@@ -231,18 +282,15 @@ const Authorization = () => {
   const renderSubmitButton = () => (
     <View style={styles.submitButtonWrapper}>
       <Button
-        mode='contained'
-        color='#3a2c3a'
+        mode="contained"
+        color="#3a2c3a"
         uppercase={false}
         disabled={authState.loading}
         loading={authState.loading}
         onPress={onSubmitButtonPress}
         labelStyle={styles.submitButtonLabel}
-        style={styles.submitButton}
-      >
-        <Text>
-          {getCurrentModalStateConfig()?.submitName}
-        </Text>
+        style={styles.submitButton}>
+        <Text>{getCurrentModalStateConfig()?.submitName}</Text>
       </Button>
     </View>
   );
@@ -258,7 +306,7 @@ const Authorization = () => {
       />
       <ErrorModal
         isVisible={authState.lastResponseStatus.error.isServerError}
-        text='Нам дуже шкода, але сталася невідома помилка.'
+        text="Нам дуже шкода, але сталася невідома помилка."
         onBackdropPress={() => dispatch(cleanUpLastResponseStatus())}
         onCloseButtonPress={() => dispatch(cleanUpLastResponseStatus())}
       />
@@ -274,27 +322,28 @@ const Authorization = () => {
       </View>
       <View style={styles.flex}>
         <ScrollView
-          keyboardShouldPersistTaps='always'
+          keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollViewContainer}
-        >
+          contentContainerStyle={styles.scrollViewContainer}>
           <View style={{ height: distanceFromModalToStatusBar + authState.modalOffset }}></View>
           <Animated.View style={{ width: modalWidth, height: modalHeight, ...styles.modal }}>
-            {authState.authModalState !== 'FORGOT_PASSWORD' && renderTobTabBar()}
+            {authState.authModalState !== 'FORGOT_PASSWORD' &&
+              authState.authModalState !== 'NEW_PASSWORD' &&
+              authState.authModalState !== 'RESET_CODE' &&
+              renderTobTabBar()}
             {renderCurrentModalForm()}
             {authState.lastResponseStatus.error.isRequestResult &&
               !authState.lastResponseStatus.error.isServerError &&
-                !!authState.lastResponseStatus.error.message && (
-                  <View style={{ width: '90%', alignSelf: 'center', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 12.5, color: '#f7623c' }}>
-                      {authState.lastResponseStatus.error.message}
-                    </Text>
-                  </View>
-                )
-            }
+              !!authState.lastResponseStatus.error.message && (
+                <View style={{ width: '90%', alignSelf: 'center', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 12.5, color: '#f7623c' }}>
+                    {authState.lastResponseStatus.error.message}
+                  </Text>
+                </View>
+              )}
             {authState.authModalState === 'LOGIN' && renderForgotPasswordButton()}
           </Animated.View>
-          {renderSubmitButton()}    
+          {renderSubmitButton()}
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -377,6 +426,9 @@ const styles = StyleSheet.create({
   submitButton: {
     width: '100%',
     borderRadius: 23,
+  },
+  backActionIcon: {
+    position: 'absolute',
   },
 });
 

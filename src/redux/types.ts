@@ -1,7 +1,12 @@
 import { LatLng } from 'react-native-maps';
 import { Photo, User } from '../api/entities';
 
-export type AuthModalState = 'LOGIN' | 'REGISTER' | 'FORGOT_PASSWORD';
+export type AuthModalState =
+  | 'LOGIN'
+  | 'REGISTER'
+  | 'FORGOT_PASSWORD'
+  | 'RESET_CODE'
+  | 'NEW_PASSWORD';
 export type MapMode = 'MARKER' | 'HEAT';
 export type PhotosType = 'OWN' | 'FAVORITE' | 'ACCESS';
 export type LocationPickerMapMode = 'VIEW' | 'NEW';
@@ -29,6 +34,9 @@ export interface LocationPickerMapState {
 export interface AuthState {
   authModalState: AuthModalState;
   isAuthStatusChecked: boolean;
+  resetCode: string;
+  resetEmail: string;
+  isResetCodeModalVisible: boolean;
   modalOffset: number;
   isAuthorized: boolean;
   authScreenReplaceAnimationType: ReplaceAnimationType;
@@ -85,8 +93,8 @@ export interface MapState {
 }
 
 export interface ShareWithUsersState {
-  userIdToSharePhoto: string,
-  searchedUsers: User[],
+  userIdToSharePhoto: string;
+  searchedUsers: User[];
   loading: boolean;
-  lastResponseStatus: ResponseStatusState,
+  lastResponseStatus: ResponseStatusState;
 }

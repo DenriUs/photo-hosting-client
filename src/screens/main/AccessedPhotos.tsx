@@ -3,7 +3,7 @@ import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Image, Touchab
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import {
-    changeCarouselMode,
+  changeCarouselMode,
   changeCurrentlyViwedPhoto,
   loadPhotos,
   openPhotoCarousel,
