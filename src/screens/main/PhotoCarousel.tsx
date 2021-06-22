@@ -1,14 +1,5 @@
 import React, { useCallback, useMemo, useRef } from 'react';
-import {
-  FlatList,
-  Image,
-  StatusBar,
-  View,
-  ViewToken,
-  StyleSheet,
-  Text,
-  ActivityIndicator,
-} from 'react-native';
+import { FlatList, Image, StatusBar, View, ViewToken, StyleSheet, Text } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { LinearGradient, LinearGradientPoint } from 'expo-linear-gradient';
@@ -51,6 +42,7 @@ const PhotoCarousel = () => {
   const loadedPhotos = useAppSelector((state) => state.photoCarousel.loadedPhotos);
   const openedPhotoIndex = useAppSelector((state) => state.photoCarousel.openedPhotoIndex);
   const currentlyViewedPhoto = useAppSelector((state) => state.photoCarousel.currentlyViewedPhoto);
+  const carouselMode = useAppSelector((state) => state.photoCarousel.carouselMode);
   const isLocationPicketMapOpened = useAppSelector(
     (state) => state.map.locationPickerMapState.isOpened
   );
@@ -63,7 +55,7 @@ const PhotoCarousel = () => {
   });
 
   const renderItem = useCallback(
-    ({ item }) => <Image resizeMode='contain' source={{ uri: item.hostUrl }} style={{ width }} />,
+    ({ item }) => <Image resizeMode="contain" source={{ uri: item.hostUrl }} style={{ width }} />,
     []
   );
 
@@ -110,6 +102,14 @@ const PhotoCarousel = () => {
     dispatch(openLocationPickerMap('NEW'));
   };
 
+  const onShareButtonPress = () => {
+    navigation.navigate('SearchUsers');
+  };
+
+  const onCommentButtonPress = () => {
+    navigation.navigate('Chat');
+  };
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBackgroundColor('transparent');
@@ -143,7 +143,7 @@ const PhotoCarousel = () => {
       )}
       {currentlyViewedPhoto?.latitude && currentlyViewedPhoto?.longitude && (
         <Button
-          icon='map-marker-outline'
+          icon="map-marker-outline"
           uppercase={false}
           onPress={onViewPhotoLocationPress}
           color={'#f7623c'}
@@ -155,8 +155,16 @@ const PhotoCarousel = () => {
       <View>
         <Title style={styles.photoInfoTitle}>Інформація про фото:</Title>
       </View>
+      {carouselMode !== 'OWN' && (
+        <View style={styles.photoDetailsContainer}>
+          <MaterialCommunityIcons name="account" size={35} color="rgba(0, 0, 0, 0.5)" />
+          <View style={styles.photoDetailsWrapper}>
+            <Text>{currentlyViewedPhoto?.authorLogin}</Text>
+          </View>
+        </View>
+      )}
       <View style={styles.photoDetailsContainer}>
-        <MaterialCommunityIcons name='image-outline' size={35} color='rgba(0, 0, 0, 0.5)' />
+        <MaterialCommunityIcons name="image-outline" size={35} color="rgba(0, 0, 0, 0.5)" />
         <View style={styles.photoDetailsWrapper}>
           <Text>{currentlyViewedPhoto?.originalName}</Text>
           <View style={styles.photoDetails}>
@@ -168,7 +176,7 @@ const PhotoCarousel = () => {
       </View>
       {currentlyViewedPhoto?.cameraModel && (
         <View style={styles.cameraDetailsContainer}>
-          <MaterialCommunityIcons name='camera-outline' size={35} color='rgba(0, 0, 0, 0.5)' />
+          <MaterialCommunityIcons name="camera-outline" size={35} color="rgba(0, 0, 0, 0.5)" />
           <View style={styles.cameraDetailsWrapper}>
             <Text>{currentlyViewedPhoto.cameraModel}</Text>
             <View style={styles.cameraDetails}>
@@ -186,17 +194,18 @@ const PhotoCarousel = () => {
           </View>
         </View>
       )}
-      {(!currentlyViewedPhoto?.latitude || !currentlyViewedPhoto?.longitude) && (
-        <Button
-          icon='map-marker-outline'
-          uppercase={false}
-          onPress={onAddPhotoLocationPress}
-          color={'#f7623c'}
-          contentStyle={{ right: 2.5 }}
-          style={{ alignSelf: 'flex-start', marginTop: 25, marginLeft: 10 }}>
-          <Text style={{ color: '#f7623c', letterSpacing: 0.5 }}>Додати місце зйомки</Text>
-        </Button>
-      )}
+      {(!currentlyViewedPhoto?.latitude || !currentlyViewedPhoto?.longitude) &&
+        carouselMode === 'OWN' && (
+          <Button
+            icon="map-marker-outline"
+            uppercase={false}
+            onPress={onAddPhotoLocationPress}
+            color={'#f7623c'}
+            contentStyle={{ right: 2.5 }}
+            style={{ alignSelf: 'flex-start', marginTop: 25, marginLeft: 10 }}>
+            <Text style={{ color: '#f7623c', letterSpacing: 0.5 }}>Додати місце зйомки</Text>
+          </Button>
+        )}
     </View>
   );
 
@@ -205,14 +214,20 @@ const PhotoCarousel = () => {
       <StatusBar translucent />
       <View style={styles.headerWrapper}>
         <Appbar.Header style={styles.header}>
-          <Appbar.BackAction color='#ffffff' onPress={onHeaderBackActionPress} />
-          <Appbar.Content title='' />
-          {favoritePhotoIds.indexOf(currentlyViewedPhoto?._id || '') !== -1 ? (
-            <Appbar.Action icon='star' color='#ffffff' onPress={onUnFavoriteButtonPress} />
-          ) : (
-            <Appbar.Action icon='star-outline' color='#ffffff' onPress={onFavoriteButtonPress} />
+          <Appbar.BackAction color="#ffffff" onPress={onHeaderBackActionPress} />
+          <Appbar.Content title="" />
+          {currentlyViewedPhoto?.isShared && (
+            <Appbar.Action icon="message-outline" color="#ffffff" onPress={onCommentButtonPress} />
           )}
-          <Appbar.Action icon='dots-vertical' color='#ffffff' onPress={onDetailsButtonPress} />
+          {favoritePhotoIds.indexOf(currentlyViewedPhoto?._id || '') !== -1 ? (
+            <Appbar.Action icon="star" color="#ffffff" onPress={onUnFavoriteButtonPress} />
+          ) : (
+            <Appbar.Action icon="star-outline" color="#ffffff" onPress={onFavoriteButtonPress} />
+          )}
+          {carouselMode === 'OWN' && (
+            <Appbar.Action icon="share" color="#ffffff" onPress={onShareButtonPress} />
+          )}
+          <Appbar.Action icon="dots-vertical" color="#ffffff" onPress={onDetailsButtonPress} />
         </Appbar.Header>
       </View>
       <LinearGradient
@@ -236,8 +251,7 @@ const PhotoCarousel = () => {
         index={0}
         snapPoints={snapPoints}
         overDragResistanceFactor={0}
-        handleComponent={renderBottomSheetHandleComponent}
-      >
+        handleComponent={renderBottomSheetHandleComponent}>
         {renderPhotoDetailsView()}
       </BottomSheet>
     </View>

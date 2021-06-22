@@ -56,7 +56,7 @@ const CustomModal = (props: IProps) => {
           {...onCloseButtonPress && { onPress: onCloseButtonPress }}
           style={styles.closeButton}
         >
-          <Text>Закрити</Text>
+          <Text>Ок</Text>
         </Button>
       </View>
     </Modal>

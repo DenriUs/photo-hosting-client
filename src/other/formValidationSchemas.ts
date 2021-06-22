@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 
 export const loginSchema = yup.object({
-  login: yup.string().required('Введіть логін'),
+  login: yup.string().required('Введіть логін').max(35),
   password: yup.string().required('Введіть пароль'),
 });
 
@@ -14,6 +14,10 @@ export const registerSchema = yup.object({
     .min(8, 'Мінімум 8 символів')
 });
 
-export const frogotPasswordSchema = yup.object({
+export const forogotPasswordSchema = yup.object({
   email: yup.string().required('Введіть пошту').email('Введіть пошту коректно'),
+});
+
+export const editProfileSchema = yup.object({
+  login: yup.string().required('Введіть логін').max(35),
 });

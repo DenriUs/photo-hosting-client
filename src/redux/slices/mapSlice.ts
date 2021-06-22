@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { LocationPickerMapMode, MapState } from '../types';
+import { LocationPickerMapMode, MapMode, MapState, PhotosType } from '../types';
 import { Photo } from '../../api/entities';
 import { State } from 'react-native-gesture-handler';
 import { LatLng } from 'react-native-maps';
@@ -7,8 +7,9 @@ import { updatePhoto } from '../../api/requests/photo';
 
 const initialState: MapState = {
   photoMarkers: [],
-  mode: 'MARKER',
+  mode: 'HEAT',
   photosType: 'OWN',
+  isOptionsOpened: false,
   locationPickerMapState: {
     markerLatLng: null,
     mode: 'VIEW',
@@ -59,6 +60,15 @@ const mapSlice = createSlice({
     toggleLocationPickerMapAutoClosing: (state, action: PayloadAction<boolean>) => {
       state.locationPickerMapState.autoClose = action.payload;
     },
+    toggleMapOptions: (state, action: PayloadAction<boolean>) => {
+      state.isOptionsOpened = action.payload;
+    },
+    changeMapMode: (state, action: PayloadAction<MapMode>) => {
+      state.mode = action.payload;
+    },
+    changePhotosType: (state, action: PayloadAction<PhotosType>) => {
+      state.photosType = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(updatePhoto.fulfilled, (state) => {
@@ -88,6 +98,9 @@ export const {
   setLocationPickerMapMarker,
   toggleMapFocused,
   toggleLocationPickerMapAutoClosing,
+  toggleMapOptions,
+  changeMapMode,
+  changePhotosType,
 } = mapSlice.actions;
 
 export default mapSlice.reducer;

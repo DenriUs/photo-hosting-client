@@ -4,7 +4,7 @@ import { MaterialIcons as MaterialIcon } from '@expo/vector-icons';
 import { useFormik } from 'formik';
 import TextInput from '../inputs/TextInput';
 import { FORM_ICON_SIZE } from '../../other/constants';
-import { frogotPasswordSchema } from '../../other/formValidationSchemas';
+import { forogotPasswordSchema } from '../../other/formValidationSchemas';
 
 interface IProps {
   onSubmit: (values: { email: string }) => void | Promise<void>;
@@ -22,7 +22,7 @@ const ForgotPasswordForm = forwardRef((props: IProps, ref: any) => {
     initialValues: {
       email: '',
     },
-    validationSchema: frogotPasswordSchema,
+    validationSchema: forogotPasswordSchema,
     onSubmit,
   });
 

@@ -2,12 +2,16 @@ export interface User {
   id: string;
   login: string;
   email: string;
+  profilePhoto: string;
+  backgroundPhoto: string;
   favoritePhotoIds: string[];
+  accessedPhotoIds: string[];
 }
 
 export interface Photo {
   _id: string;
   authorId: string;
+  authorLogin: string;
   originalName: string;
   hostUrl: string;
   creationDate: string;
@@ -20,4 +24,5 @@ export interface Photo {
   exposureTime?: number;
   focalLenght?: number;
   iso?: number;
+  isShared?: boolean;
 }

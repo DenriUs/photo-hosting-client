@@ -57,8 +57,6 @@ const photoCarouselSlice = createSlice({
       state.currentlyViewedPhoto = null;
     },
   },
-  extraReducers: (builder) => {
-  },
 });
 
 export const {

@@ -41,8 +41,8 @@ const authSlice = createSlice({
       state.modalOffset = action.payload;
     },
     logoutAccount: (state) => {
-      state.isAuthorized = false;
-      state.authScreenReplaceAnimationType = 'push';
+      state.isAuthStatusChecked = true;
+      state.loading = false;
     },
     cleanUpLastResponseStatus: (state) => {
       state.lastResponseStatus = initialState.lastResponseStatus;

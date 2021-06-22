@@ -20,7 +20,6 @@ const FavoritePhotos = () => {
       <TouchableOpacity onPress={() => {
         dispatch(loadPhotos(data));
         dispatch(changeCurrentlyViwedPhoto(data[item.index]));
-        dispatch(changeCarouselMode('FAVORITE'));
         dispatch(openPhotoCarousel(item.index));
       }}>
         <View style={styles.imageWrapper}>
@@ -37,6 +36,12 @@ const FavoritePhotos = () => {
         dispatch(getFavoritePhotos());
       }
     }, [areFavoritePhotosLoaded])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(changeCarouselMode('FAVORITE'))
+    }, [])
   );
 
   return (
@@ -62,7 +67,7 @@ const styles = StyleSheet.create({
     borderColor: '#ffffff',
   },
   bottomSheetContentContainer: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginTop: 0.5,
   },
 });

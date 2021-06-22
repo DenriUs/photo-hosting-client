@@ -82,6 +82,14 @@ const LocationPickerMap = () => {
       <MapView
         rotateEnabled={false}
         provider={PROVIDER_GOOGLE}
+        {...(locationPickerMapState.markerLatLng &&
+          locationPickerMapState.mode === 'VIEW' && {
+            region: {
+              ...locationPickerMapState.markerLatLng,
+              longitudeDelta: 15,
+              latitudeDelta: 15,
+            },
+          })}
         style={styles.flex}
         {...(locationPickerMapState.mode === 'NEW' && { onPress: onMapViewPress })}>
         {locationPickerMapState.markerLatLng && (

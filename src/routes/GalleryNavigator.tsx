@@ -4,13 +4,14 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import LatestPhotos from '../screens/main/LatestPhotos';
 import FavoritePhotos from '../screens/main/FavoritePhotos';
+import AccessedPhotos from '../screens/main/AccessedPhotos';
 
 const Tab = createMaterialTopTabNavigator();
 
 const GalleryNavigator = () => {
   const { width } = useWindowDimensions();
 
-  const indicatorWidth = width / 2 - 40 * 2;
+  const indicatorWidth = width / 3 - 20 * 2;
 
   return (
     <Tab.Navigator
@@ -22,7 +23,7 @@ const GalleryNavigator = () => {
         showLabel: false,
         indicatorStyle: {
           width: indicatorWidth,
-          left: (width / 2 - indicatorWidth) / 2,
+          left: (width / 3 - indicatorWidth) / 2,
           ...styles.indicator,
         },
         labelStyle: styles.label,
@@ -30,16 +31,24 @@ const GalleryNavigator = () => {
       screenOptions={({ route }) => ({
         tabBarLabel: '',
         tabBarIcon: ({ color, focused }) => {
-          let iconName: 'image-multiple' | 'image-multiple-outline' | 'star' | 'star-outline' = 'image-multiple';
+          let iconName:
+            | 'image-multiple'
+            | 'image-multiple-outline'
+            | 'star'
+            | 'star-outline'
+            | 'account-group'
+            | 'account-group-outline' = 'image-multiple';
           if (route.name === 'FavoritePhotos') {
             iconName = focused ? 'star' : 'star-outline';
+          } else if (route.name === 'AccessedPhotos') {
+            iconName = focused ? 'account-group' : 'account-group-outline';
           }
-          return <MaterialCommunityIcons name={iconName} size={26} color={color} />
-        }
-      })}
-    >
+          return <MaterialCommunityIcons name={iconName} size={26} color={color} />;
+        },
+      })}>
       <Tab.Screen name='LatestPhotos' component={LatestPhotos} />
       <Tab.Screen name='FavoritePhotos' component={FavoritePhotos} />
+      <Tab.Screen name='AccessedPhotos' component={AccessedPhotos} />
     </Tab.Navigator>
   );
 };
@@ -51,7 +60,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
-    color: '#3a2c3a'
+    color: '#3a2c3a',
   },
 });
 

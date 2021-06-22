@@ -13,25 +13,40 @@ import { IconButton, Title } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useSafeAreaFrame } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import GalleryNavigator from '../../routes/GalleryNavigator';
 import { logoutAccount } from '../../redux/slices/authSlice';
-import { getOwnPhotos } from '../../api/requests/photo';
+import { getAccessedPhotos, getFavoritePhotos, getOwnPhotos } from '../../api/requests/photo';
 import LoadingScreen from '../other/LoadingScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { jwtAsyncStorageKeyName } from '../../other/constants';
+import { jwtAsyncStorageKeyName, maxProfileLoginLength } from '../../other/constants';
+import { PhotosType } from '../../redux/types';
+import { AsyncThunk } from '@reduxjs/toolkit';
+import { RejectedValue } from '../../api/types';
 
 const Profile = () => {
   const userState = useAppSelector((state) => state.user);
   const photoState = useAppSelector((state) => state.photo);
   const isCarouselOpened = useAppSelector((state) => state.photoCarousel.isCarouselOpened);
+  const carouselMode = useAppSelector((state) => state.photoCarousel.carouselMode);
   const dispatch = useAppDispatch();
 
   const navigation = useNavigation();
 
+  const { width } = useSafeAreaFrame();
+
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const snapPoints = useMemo(() => ['52%', '100%'], []);
+
+  const photosTypeToLoad = new Map<
+    PhotosType,
+    AsyncThunk<any, void, { rejectValue: RejectedValue }>
+  >();
+  photosTypeToLoad.set('OWN', getOwnPhotos);
+  photosTypeToLoad.set('FAVORITE', getFavoritePhotos);
+  photosTypeToLoad.set('ACCESS', getAccessedPhotos);
 
   const logout = async () => {
     await AsyncStorage.setItem(jwtAsyncStorageKeyName, '');
@@ -73,22 +88,19 @@ const Profile = () => {
             refreshControl={
               <RefreshControl
                 refreshing={photoState.loading}
-                onRefresh={() => dispatch(getOwnPhotos())}
+                onRefresh={() => {
+                  const loadAction = photosTypeToLoad.get(carouselMode);
+                  if (loadAction) {
+                    dispatch(loadAction());
+                  }
+                }}
                 colors={['#3a2c3a', '#f7623c']}
               />
             }
             style={styles.scrollView}>
             <View style={styles.profileContainer}>
               <View style={styles.profileContentContainer}>
-                <View style={{ flex: 1, height: '100%' }}>
-                  <IconButton
-                    icon="account-edit"
-                    color="#3a2c3a"
-                    size={28}
-                    onPress={() => navigation.navigate('EditUser')}
-                    style={styles.editButton}
-                  />
-                </View>
+                <View style={{ flex: 1, height: '100%' }}></View>
                 <View style={{ flex: 1, alignItems: 'center', top: '-15%' }}>
                   <View style={styles.profileImageWrapper}>
                     <Image
@@ -96,14 +108,24 @@ const Profile = () => {
                       style={styles.profileImage}
                     />
                   </View>
-                  <Title style={styles.loginText}>{userState.userData.login}</Title>
-                  <Text style={styles.emailText}>{userState.userData.email}</Text>
+                  <View style={[{ alignItems: 'center' }, { width }]}>
+                    <Title style={styles.loginText}>
+                      {userState.userData.login.length > maxProfileLoginLength
+                        ? userState.userData.login.substring(0, maxProfileLoginLength - 3) + '...'
+                        : userState.userData.login}
+                    </Title>
+                    <Text style={styles.emailText}>
+                      {userState.userData.email.length > maxProfileLoginLength
+                        ? userState.userData.email.substring(0, maxProfileLoginLength - 3) + '...'
+                        : userState.userData.email}
+                    </Text>
+                  </View>
                 </View>
                 <View style={{ flex: 1, height: '100%', alignItems: 'flex-end' }}>
                   <IconButton
                     icon="logout"
                     color="#3a2c3a"
-                    size={28}
+                    size={25}
                     onPress={logout}
                     style={styles.exitButton}
                   />

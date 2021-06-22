@@ -8,19 +8,20 @@ import { ExifData } from '../../other/types';
 const getFileUploadFormData = (fileUri: string, body: ExifData): FormData => {
   const formData = new FormData();
   formData.append('photo', {
-    uri : fileUri,
+    uri: fileUri,
     type: mime.getType(fileUri),
-    name: fileUri.split('/').pop()
+    name: fileUri.split('/').pop(),
   });
   Object.keys(body).forEach((key) => {
+    //@ts-ignore
     formData.append(key, body[key]);
   });
   return formData;
-}
+};
 
 export const uploadPhoto = createAsyncThunk<
   any,
-  { uri: string, exifData: ExifData },
+  { uri: string; exifData: ExifData },
   { rejectValue: RejectedValue }
 >('photo/upload', async ({ uri, exifData }, { rejectWithValue }) => {
   const response = await sendPostRequest('/photo/upload', getFileUploadFormData(uri, exifData), {
@@ -36,25 +37,24 @@ export const uploadPhoto = createAsyncThunk<
   return response.data;
 });
 
-export const getOwnPhotos = createAsyncThunk<
-  any,
-  void,
-  { rejectValue: RejectedValue }
->('photo/getOwnPhotos', async (_void, { rejectWithValue }) => {
-  const response = await sendGetRequest('/photo/getOwnPhotos');
-  if (response.error) {
-    return rejectWithValue({
-      error: response.error.message,
-      isServerError: response.error.isServerError,
-    });
+export const getOwnPhotos = createAsyncThunk<any, void, { rejectValue: RejectedValue }>(
+  'photo/getOwnPhotos',
+  async (_void, { rejectWithValue }) => {
+    const response = await sendGetRequest('/photo/getOwnPhotos');
+    if (response.error) {
+      return rejectWithValue({
+        error: response.error.message,
+        isServerError: response.error.isServerError,
+      });
+    }
+    return response.data;
   }
-  return response.data;
-});
+);
 
 export const addFavoritePhoto = createAsyncThunk<
   any,
-  { userId: string, favoritePhotoId: string },
-  { rejectValue: { error: string, isServerError?: boolean, favoritePhotoId: string } }
+  { userId: string; favoritePhotoId: string },
+  { rejectValue: { error: string; isServerError?: boolean; favoritePhotoId: string } }
 >('photo/addFavorite', async (data, { rejectWithValue }) => {
   const response = await sendPostRequest('/photo/addFavorite', data);
   if (response.error) {
@@ -69,8 +69,8 @@ export const addFavoritePhoto = createAsyncThunk<
 
 export const removeFavoritePhoto = createAsyncThunk<
   any,
-  { userId: string, favoritePhotoId: string },
-  { rejectValue: { error: string, isServerError?: boolean, favoritePhotoId: string } }
+  { userId: string; favoritePhotoId: string },
+  { rejectValue: { error: string; isServerError?: boolean; favoritePhotoId: string } }
 >('photo/removeFavorite', async (data, { rejectWithValue }) => {
   const response = await sendPostRequest('/photo/removeFavorite', data);
   if (response.error) {
@@ -83,12 +83,26 @@ export const removeFavoritePhoto = createAsyncThunk<
   return response.data;
 });
 
-export const getFavoritePhotos = createAsyncThunk<
+export const getFavoritePhotos = createAsyncThunk<any, void, { rejectValue: RejectedValue }>(
+  'photo/getFavoritePhotos',
+  async (_void, { rejectWithValue }) => {
+    const response = await sendGetRequest('/photo/getFavoritePhotos');
+    if (response.error) {
+      return rejectWithValue({
+        error: response.error.message,
+        isServerError: response.error.isServerError,
+      });
+    }
+    return response.data;
+  }
+);
+
+export const addAccessedPhoto = createAsyncThunk<
   any,
-  void,
-  { rejectValue: RejectedValue }
->('photo/getFavoritePhotos', async (_void, { rejectWithValue }) => {
-  const response = await sendGetRequest('/photo/getFavoritePhotos');
+  { userId: string; accessedPhotoId: string },
+  { rejectValue: { error: string; isServerError?: boolean; } }
+>('photo/addAccessed', async (data, { rejectWithValue }) => {
+  const response = await sendPostRequest('/photo/addAccessed', data);
   if (response.error) {
     return rejectWithValue({
       error: response.error.message,
@@ -98,24 +112,23 @@ export const getFavoritePhotos = createAsyncThunk<
   return response.data;
 });
 
-export const getAccessedPhotos = createAsyncThunk<
-  any,
-  void,
-  { rejectValue: RejectedValue }
->('photo/getAccessedPhotos', async (_void, { rejectWithValue }) => {
-  const response = await sendGetRequest('/photo/getAccessedPhotos');
-  if (response.error) {
-    return rejectWithValue({
-      error: response.error.message,
-      isServerError: response.error.isServerError,
-    });
+export const getAccessedPhotos = createAsyncThunk<any, void, { rejectValue: RejectedValue }>(
+  'photo/getAccessedPhotos',
+  async (_void, { rejectWithValue }) => {
+    const response = await sendGetRequest('/photo/getAccessedPhotos');
+    if (response.error) {
+      return rejectWithValue({
+        error: response.error.message,
+        isServerError: response.error.isServerError,
+      });
+    }
+    return response.data;
   }
-  return response.data;
-});
+);
 
 export const updatePhoto = createAsyncThunk<
   any,
-  { id: string, latitude: number, longitude: number },
+  { id: string; latitude: number; longitude: number },
   { rejectValue: RejectedValue }
 >('photo/update', async (data, { rejectWithValue }) => {
   const response = await sendPostRequest('/photo/update', data);

@@ -43,6 +43,15 @@ export interface UserState {
   lastResponseStatus: ResponseStatusState;
 }
 
+export interface EditUserState {
+  login: string;
+  email: string;
+  profilePhoto: string;
+  backgroundPhoto: string;
+  loading: boolean;
+  lastResponseStatus: ResponseStatusState;
+}
+
 export interface PhotoState {
   ownPhotos: Photo[];
   favoritesPhotos: Photo[];
@@ -68,8 +77,16 @@ export interface MapState {
   photoMarkers: Photo[];
   mode: MapMode;
   photosType: PhotosType;
+  isOptionsOpened: boolean;
   locationPickerMapState: LocationPickerMapState;
   isFocused: boolean;
   loading: boolean;
   lastResponseStatus: ResponseStatusState;
+}
+
+export interface ShareWithUsersState {
+  userIdToSharePhoto: string,
+  searchedUsers: User[],
+  loading: boolean;
+  lastResponseStatus: ResponseStatusState,
 }

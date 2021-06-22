@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { string } from 'yup/lib/locale';
 import { Photo, User } from '../../api/entities';
 import { addFavoritePhoto } from '../../api/requests/photo';
 import { loadCurrentUserData } from '../../api/requests/user';
@@ -10,7 +11,10 @@ const initialState: UserState = {
     id: '',
     login: '',
     email: '',
+    profilePhoto: '',
+    backgroundPhoto: '',
     favoritePhotoIds: [],
+    accessedPhotoIds: [],
   },
   loading: false,
   lastResponseStatus: {

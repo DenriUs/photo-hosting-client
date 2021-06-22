@@ -51,8 +51,8 @@ const photoSlice = createSlice({
       state.ownPhotos.push(action.payload);
     });
     builder.addCase(updatePhoto.fulfilled, (state, action: PayloadAction<Photo>) => {
-      const photoIndex = state.ownPhotos.findIndex((photo) => photo._id === action.payload._id );
-      if (photoIndex !== - 1) {
+      const photoIndex = state.ownPhotos.findIndex((photo) => photo._id === action.payload._id);
+      if (photoIndex !== -1) {
         state.ownPhotos[photoIndex] = action.payload;
       }
     });

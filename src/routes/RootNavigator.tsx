@@ -10,6 +10,9 @@ import Authorization from '../screens/entry/Authorization';
 import PhotoCarousel from '../screens/main/PhotoCarousel';
 import { loadCurrentUserData } from '../api/requests/user';
 import LocationPickerMap from '../screens/main/LocationPIckerMap';
+import EditProfile from '../screens/main/EditProfile';
+import SearchUsers from '../screens/main/SearchUsers';
+import ChatScreen from '../screens/main/Chat';
 
 const AppStack = createStackNavigator();
 
@@ -17,7 +20,7 @@ const RootNavigator = () => {
   const isAuthStatusChecked = useAppSelector((state) => state.auth.isAuthStatusChecked);
   const isAuthorized = useAppSelector((state) => state.auth.isAuthorized);
   const authScreenReplaceAnimationType = useAppSelector(
-    (state) => state.auth.authScreenReplaceAnimationType,
+    (state) => state.auth.authScreenReplaceAnimationType
   );
   const dispatch = useAppDispatch();
 
@@ -31,20 +34,23 @@ const RootNavigator = () => {
   return (
     <NavigationContainer>
       <View style={[styles.flex, styles.navigatorContainer]}>
-        <AppStack.Navigator headerMode='none'>
+        <AppStack.Navigator headerMode="none">
           {!isAuthStatusChecked ? (
-            <AppStack.Screen name='LoadingScreen' component={LoadingScreen} />
+            <AppStack.Screen name="LoadingScreen" component={LoadingScreen} />
           ) : !isAuthorized ? (
             <AppStack.Screen
-              name='Authorization'
+              name="Authorization"
               component={Authorization}
               options={{ animationTypeForReplace: authScreenReplaceAnimationType }}
             />
           ) : (
             <>
-              <AppStack.Screen name='MainNavigator' component={MainNavigator} />
-              <AppStack.Screen name='PhotoCarousel' component={PhotoCarousel} />
-              <AppStack.Screen name='LocationPickerMap' component={LocationPickerMap} />
+              <AppStack.Screen name="MainNavigator" component={MainNavigator} />
+              <AppStack.Screen name="EditProfile" component={EditProfile} />
+              <AppStack.Screen name="PhotoCarousel" component={PhotoCarousel} />
+              <AppStack.Screen name="SearchUsers" component={SearchUsers} />
+              <AppStack.Screen name="Chat" component={ChatScreen} />
+              <AppStack.Screen name="LocationPickerMap" component={LocationPickerMap} />
             </>
           )}
         </AppStack.Navigator>
@@ -59,7 +65,7 @@ const styles = StyleSheet.create({
   },
   navigatorContainer: {
     backgroundColor: '#f5e0ce',
-  }
+  },
 });
 
 export default RootNavigator;

@@ -1,17 +1,28 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { combineReducers, configureStore, PayloadAction } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import userReducer from './slices/userSlice';
 import photoReducer from './slices/photoSlice';
 import photoCarouselReducer from './slices/photoCarouselSlice';
 import mapReducer from './slices/mapSlice';
+import editUserReducer from './slices/editUserSlice';
+import shareWithUsersReducer from './slices/shareWithUsersSlice';
 
-const rootReducer = combineReducers({
+const combinedReducers = combineReducers({
   auth: authReducer,
   user: userReducer,
+  editUser: editUserReducer,
   photo: photoReducer,
   photoCarousel: photoCarouselReducer,
+  shareWithUsers: shareWithUsersReducer,
   map: mapReducer,
 });
+
+const rootReducer = (state: any, action: any) => {
+  if (action.type === 'auth/logoutAccount') {
+    state = undefined;
+  }
+  return combinedReducers(state, action);
+};
 
 const store = configureStore({
   reducer: rootReducer,

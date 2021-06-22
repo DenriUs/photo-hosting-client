@@ -1,10 +1,16 @@
-import React, { useCallback, useEffect } from 'react';
-import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Image } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Image, TouchableNativeFeedback } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
-import { changeCarouselMode, changeCurrentlyViwedPhoto, loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
+import {
+    changeCarouselMode,
+  changeCurrentlyViwedPhoto,
+  loadPhotos,
+  openPhotoCarousel,
+} from '../../redux/slices/photoCarouselSlice';
 import { getAccessedPhotos } from '../../api/requests/photo';
 import { useFocusEffect } from '@react-navigation/native';
+import { TouchableRipple } from 'react-native-paper';
 
 const AccessedPhotos = () => {
   const areAccessedPhotosLoaded = useAppSelector((state) => state.photo.areAccessedPhotosLoaded);
@@ -17,18 +23,23 @@ const AccessedPhotos = () => {
 
   const renderItem = useCallback(
     ({ item }) => (
-      <TouchableOpacity onPress={() => {
-        dispatch(loadPhotos(data));
-        dispatch(changeCurrentlyViwedPhoto(data[item.index]));
-        dispatch(changeCarouselMode('ACCESS'));
-        dispatch(openPhotoCarousel(item.index));
-      }}>
+      <TouchableRipple
+        rippleColor="rgba(0, 0, 0, .32)"
+        onPress={() => {
+          dispatch(loadPhotos(data));
+          dispatch(changeCurrentlyViwedPhoto(data[item.index]));
+          dispatch(openPhotoCarousel(item.index));
+        }}>
         <View style={styles.imageWrapper}>
-          <Image resizeMethod='resize' source={{ uri: item.hostUrl }} style={{ width: width / 3, height: width / 3 }} />
+          <Image
+            resizeMethod="resize"
+            source={{ uri: item.hostUrl }}
+            style={{ width: width / 3, height: width / 3 }}
+          />
         </View>
-      </TouchableOpacity>
+      </TouchableRipple>
     ),
-    [areAccessedPhotosLoaded, accessedPhotos],
+    [areAccessedPhotosLoaded, accessedPhotos]
   );
 
   useFocusEffect(
@@ -37,6 +48,12 @@ const AccessedPhotos = () => {
         dispatch(getAccessedPhotos());
       }
     }, [areAccessedPhotosLoaded])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(changeCarouselMode('ACCESS'))
+    }, [])
   );
 
   return (
@@ -51,7 +68,7 @@ const AccessedPhotos = () => {
       contentContainerStyle={styles.bottomSheetContentContainer}
     />
   );
-}
+};
 
 const styles = StyleSheet.create({
   imageWrapper: {
@@ -62,7 +79,7 @@ const styles = StyleSheet.create({
     borderColor: '#ffffff',
   },
   bottomSheetContentContainer: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginTop: 0.5,
   },
 });
