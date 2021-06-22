@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { PhotoCarouselState, PhotosType } from '../types';
 import { Photo } from '../../api/entities';
+import { addAccessedPhoto } from '../../api/requests/photo';
 
 const initialState: PhotoCarouselState = {
   loadedPhotos: [],
@@ -57,6 +58,27 @@ const photoCarouselSlice = createSlice({
       state.currentlyViewedPhoto = null;
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(addAccessedPhoto.fulfilled, (state) => {
+      state.loading = false;
+      state.lastResponseStatus.success.isRequestResult = true;
+      if (state.currentlyViewedPhoto) {
+        state.currentlyViewedPhoto.isShared = true;
+      }
+    });
+    builder.addCase(addAccessedPhoto.rejected, (state, action) => {
+      state.loading = false;
+      state.lastResponseStatus.error.isRequestResult = true;
+      if (action.payload) {
+        state.lastResponseStatus.error.message = action.payload.error;
+        state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
+      }
+    });
+    builder.addCase(addAccessedPhoto.pending, (state) => {
+      dropLastResponseStatus(state);
+      state.loading = false;
+    });
+  }
 });
 
 export const {

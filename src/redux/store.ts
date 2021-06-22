@@ -6,6 +6,7 @@ import photoCarouselReducer from './slices/photoCarouselSlice';
 import mapReducer from './slices/mapSlice';
 import editUserReducer from './slices/editUserSlice';
 import shareWithUsersReducer from './slices/shareWithUsersSlice';
+import commentReducer from './slices/commentSlice';
 
 const combinedReducers = combineReducers({
   auth: authReducer,
@@ -15,6 +16,7 @@ const combinedReducers = combineReducers({
   photoCarousel: photoCarouselReducer,
   shareWithUsers: shareWithUsersReducer,
   map: mapReducer,
+  comment: commentReducer,
 });
 
 const rootReducer = (state: any, action: any) => {

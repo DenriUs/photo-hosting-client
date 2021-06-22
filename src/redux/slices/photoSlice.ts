@@ -2,6 +2,7 @@ import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import { PhotoState } from '../types';
 import { Photo } from '../../api/entities';
 import {
+  addAccessedPhoto,
   addFavoritePhoto,
   getAccessedPhotos,
   getFavoritePhotos,
@@ -59,6 +60,18 @@ const photoSlice = createSlice({
     builder.addCase(addFavoritePhoto.fulfilled, (state, action: PayloadAction<Photo>) => {
       state.lastResponseStatus.success.isRequestResult = true;
       state.favoritesPhotos.push(action.payload);
+    });
+    builder.addCase(addAccessedPhoto.fulfilled, (state, action: PayloadAction<Photo>) => {
+      state.loading = false;
+      state.lastResponseStatus.success.isRequestResult = true;
+      const sharedOwnPhotoIndex = state.ownPhotos.findIndex((photo) => photo._id === action.payload._id);
+      const sharedFavoritePhotoIndex = state.favoritesPhotos.findIndex((photo) => photo._id === action.payload._id);
+      if (sharedOwnPhotoIndex !== -1) {
+        state.ownPhotos[sharedOwnPhotoIndex] = action.payload;
+      }
+      if (sharedFavoritePhotoIndex !== -1) {
+        state.favoritesPhotos[sharedFavoritePhotoIndex] = action.payload;
+      }
     });
     builder.addCase(removeFavoritePhoto.fulfilled, (state, action: PayloadAction<string>) => {
       state.lastResponseStatus.success.isRequestResult = true;

@@ -1,5 +1,5 @@
 import { LatLng } from 'react-native-maps';
-import { Photo, User } from '../api/entities';
+import { Photo, User, Comment } from '../api/entities';
 
 export type AuthModalState =
   | 'LOGIN'
@@ -96,6 +96,12 @@ export interface MapState {
 export interface ShareWithUsersState {
   userIdToSharePhoto: string;
   searchedUsers: User[];
+  loading: boolean;
+  lastResponseStatus: ResponseStatusState;
+}
+
+export interface CommentState {
+  comments: Comment[];
   loading: boolean;
   lastResponseStatus: ResponseStatusState;
 }

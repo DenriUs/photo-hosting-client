@@ -35,7 +35,7 @@ const shareWithUsersSlice = createSlice({
       state.searchedUsers = [];
     },
     removeClickedUser: (state, action: PayloadAction<string>) => {
-      const userIndex = state.searchedUsers.findIndex((user) => user.id = action.payload);
+      const userIndex = state.searchedUsers.findIndex((user) => user._id = action.payload);
       if (userIndex !== -1) {
         state.searchedUsers.splice(userIndex, 1);
       }
