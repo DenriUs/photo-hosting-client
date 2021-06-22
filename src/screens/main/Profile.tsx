@@ -53,6 +53,10 @@ const Profile = () => {
     dispatch(logoutAccount());
   };
 
+  const editProfile = () => {
+    navigation.navigate('EditProfile');
+  };
+
   useFocusEffect(
     useCallback(() => {
       if (photoState.uploading) return;
@@ -81,7 +85,9 @@ const Profile = () => {
       <View style={styles.container}>
         <ImageBackground
           resizeMode="cover"
-          source={{ uri: 'https://picsum.photos/800/800?random=10' }}
+          {...(userState.userData.backgroundPhotoUrl
+            ? { source: { uri: userState.userData.backgroundPhotoUrl } }
+            : { source: require('../../../assets/default-background-image.png') })}
           style={{ width: '100%', height: '100%' }}>
           <ScrollView
             contentContainerStyle={styles.scrollViewContent}
@@ -100,11 +106,21 @@ const Profile = () => {
             style={styles.scrollView}>
             <View style={styles.profileContainer}>
               <View style={styles.profileContentContainer}>
-                <View style={{ flex: 1, height: '100%' }}></View>
+                <View style={{ flex: 1, height: '100%' }}>
+                  <IconButton
+                    icon="account-edit"
+                    color="#3a2c3a"
+                    size={28}
+                    onPress={editProfile}
+                    style={styles.editButton}
+                  />
+                </View>
                 <View style={{ flex: 1, alignItems: 'center', top: '-15%' }}>
                   <View style={styles.profileImageWrapper}>
                     <Image
-                      source={{ uri: 'https://picsum.photos/800/800?random=1' }}
+                      {...(userState.userData.profilePhotoUrl
+                        ? { source: { uri: userState.userData.profilePhotoUrl } }
+                        : { source: require('../../../assets/default-profile-image.png') })}
                       style={styles.profileImage}
                     />
                   </View>
@@ -125,7 +141,7 @@ const Profile = () => {
                   <IconButton
                     icon="logout"
                     color="#3a2c3a"
-                    size={25}
+                    size={24}
                     onPress={logout}
                     style={styles.exitButton}
                   />
@@ -163,7 +179,7 @@ const styles = StyleSheet.create({
   },
   editButton: {
     marginTop: 20,
-    marginLeft: 20,
+    marginLeft: 18,
     zIndex: 1,
   },
   exitButton: {

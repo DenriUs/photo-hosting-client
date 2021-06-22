@@ -1,21 +1,26 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import { string } from 'yup/lib/locale';
 import { Photo, User } from '../../api/entities';
-import { addFavoritePhoto } from '../../api/requests/photo';
+import {
+  addFavoritePhoto,
+  updateBackgroundPhoto,
+  updateProfilePhoto,
+} from '../../api/requests/photo';
 import { loadCurrentUserData } from '../../api/requests/user';
 import { UserState } from '../types';
 
 const initialState: UserState = {
   hasLoadAttempt: false,
   userData: {
-    id: '',
+    _id: '',
     login: '',
     email: '',
-    profilePhoto: '',
-    backgroundPhoto: '',
+    profilePhotoUrl: '',
+    backgroundPhotoUrl: '',
     favoritePhotoIds: [],
     accessedPhotoIds: [],
   },
+  profilePhotoUpdating: false,
   loading: false,
   lastResponseStatus: {
     success: {
@@ -64,23 +69,55 @@ const userSlice = createSlice({
       }
       state.hasLoadAttempt = true;
     });
-    builder.addCase(loadCurrentUserData.pending, (state) => {
+    builder.addCase(updateProfilePhoto.fulfilled, (state, action: PayloadAction<User>) => {
+      state.profilePhotoUpdating = false;
+      console.log(state.userData.profilePhotoUrl, action.payload.profilePhotoUrl);
+      state.userData.profilePhotoUrl = action.payload.profilePhotoUrl;
+    }),
+      builder.addCase(updateBackgroundPhoto.fulfilled, (state, action: PayloadAction<User>) => {
+        state.profilePhotoUpdating = false;
+        console.log(state.userData.backgroundPhotoUrl, action.payload.backgroundPhotoUrl);
+        state.userData.backgroundPhotoUrl = action.payload.backgroundPhotoUrl;
+      }),
+      builder.addCase(addFavoritePhoto.rejected, (state, action) => {
+        state.lastResponseStatus.error.isRequestResult = true;
+        if (action.payload) {
+          state.lastResponseStatus.error.message = action.payload.error;
+          state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
+        }
+        const favoritePhotoIdIndex = state.userData.favoritePhotoIds.indexOf(
+          action.payload?.favoritePhotoId || ''
+        );
+        if (favoritePhotoIdIndex !== -1) {
+          state.userData.favoritePhotoIds.splice(favoritePhotoIdIndex, 1);
+        }
+      });
+    builder.addMatcher(
+      isAnyOf(updateProfilePhoto.rejected, updateBackgroundPhoto.rejected),
+      (state, action) => {
+        state.profilePhotoUpdating = false;
+        state.lastResponseStatus.error.isRequestResult = true;
+        if (action.payload) {
+          state.lastResponseStatus.error.message = action.payload.error;
+          state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
+        }
+        state.hasLoadAttempt = true;
+      }
+    );
+    builder.addMatcher(isAnyOf(loadCurrentUserData.pending), (state) => {
       dropLastResponseStatus(state);
       state.loading = true;
     });
-    builder.addCase(addFavoritePhoto.rejected, (state, action) => {
-      state.lastResponseStatus.error.isRequestResult = true;
-      if (action.payload) {
-        state.lastResponseStatus.error.message = action.payload.error;
-        state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
+    builder.addMatcher(
+      isAnyOf(
+        updateProfilePhoto.pending,
+        updateBackgroundPhoto.pending,
+      ),
+      (state) => {
+        dropLastResponseStatus(state);
+        state.profilePhotoUpdating = true;
       }
-      const favoritePhotoIdIndex = state.userData.favoritePhotoIds.indexOf(
-        action.payload?.favoritePhotoId || ''
-      );
-      if (favoritePhotoIdIndex !== -1) {
-        state.userData.favoritePhotoIds.splice(favoritePhotoIdIndex, 1);
-      }
-    });
+    );
   },
 });
 

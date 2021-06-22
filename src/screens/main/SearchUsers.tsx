@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, View, TouchableOpacity, FlatList, Text } from 'react-native';
+import { StyleSheet, View, FlatList, Text, Image } from 'react-native';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { addAccessedPhoto } from '../../api/requests/photo';
 import { useNavigation } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Appbar, Searchbar, Title } from 'react-native-paper';
+import { Appbar, Searchbar, Title, TouchableRipple } from 'react-native-paper';
 import { useState } from 'react';
 import { searchUsersToSharePhoto } from '../../api/requests/user';
 import { clearSearchedUsers, removeClickedUser } from '../../redux/slices/shareWithUsersSlice';
@@ -31,17 +30,27 @@ const SearchUsers = () => {
 
   const renderItem = useCallback(
     ({ item }) => (
-      <TouchableOpacity onPress={() => {
+      <TouchableRipple onPress={() => {
         if (currentlyViewedPhoto) {
           dispatch(removeClickedUser(item._id));
           dispatch(addAccessedPhoto({ userId: item._id, accessedPhotoId: currentlyViewedPhoto._id }));
         }
       }}>
-        <View style={{ width: '100%', height: 60, flexDirection: 'row', alignItems: 'center', padding: 10, marginTop: 10 }}>
-          <MaterialIcons size={60} name='person' />
-          <Title style={{ marginLeft: 10, fontSize: 20 }}>{item.login}</Title>
+        <View style={{ width: '100%', height: 70, flexDirection: 'row', alignItems: 'center', paddingRight: 10, paddingLeft: 10, marginTop: 10 }}>
+          <View style={[styles.profileImageWrapper, { elevation: item.profilePhotoUrl ? 8 : 0 }]}>
+            <Image
+              {...(item.profilePhotoUrl
+                ? { source: { uri: item.profilePhotoUrl } }
+                : { source: require('../../../assets/default-profile-image.png') })}
+              style={styles.profileImage}
+            />
+          </View>
+          <View style={{ flexDirection: 'column' }}>
+            <Title style={{ marginLeft: 10, fontSize: 20 }}>{item.login}</Title>
+            <Text style={{ marginLeft: 10, fontSize: 13, bottom: 5 }}>{item.email}</Text>
+          </View>
         </View>
-      </TouchableOpacity>
+      </TouchableRipple>
     ),
     [shareWithUsersState.searchedUsers]
   );
@@ -49,7 +58,7 @@ const SearchUsers = () => {
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
       <Appbar.Header style={styles.header}>
-        <Appbar.BackAction color="#000000" onPress={() => {
+        <Appbar.BackAction color="#3a2c3a" onPress={() => {
           dispatch(clearSearchedUsers());
           navigation.goBack();
         }} />
@@ -81,6 +90,18 @@ const styles = StyleSheet.create({
   header: {
     zIndex: 2,
     backgroundColor: 'transparent',
+  },
+  profileImageWrapper: {
+    borderRadius: 90,
+    justifyContent: 'center',
+    borderColor: '#ffffff',
+    borderWidth: 2,
+    elevation: 8,
+  },
+  profileImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 90,
   },
 });
 

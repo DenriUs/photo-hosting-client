@@ -1,9 +1,9 @@
 export interface User {
-  id: string;
+  _id: string;
   login: string;
   email: string;
-  profilePhoto: string;
-  backgroundPhoto: string;
+  profilePhotoUrl: string;
+  backgroundPhotoUrl: string;
   favoritePhotoIds: string[];
   accessedPhotoIds: string[];
 }

@@ -28,6 +28,7 @@ import {
 import { updateUser } from '../../api/requests/user';
 import SuccessModal from '../../components/modals/SuccessModal';
 import ErrorModal from '../../components/modals/ErrorModal';
+import { updateBackgroundPhoto, updateProfilePhoto } from '../../api/requests/photo';
 
 const EditProfile = () => {
   const editUserState = useAppSelector((state) => state.editUser);
@@ -52,10 +53,6 @@ const EditProfile = () => {
     dispatch(cleanUpLastResponseStatus());
   };
 
-  const onSubmitButtonPress = () => {
-    formik.submitForm();
-  };
-
   const chooseProfleImage = async () => {
     if (!(await checkMediaLibraryPermission())) {
       alert('Для завантаження зображень потрібно надати дозвіл.');
@@ -67,6 +64,7 @@ const EditProfile = () => {
     });
     if (result.cancelled) return;
     dispatch(pickProfileImage(result.uri));
+    dispatch(updateProfilePhoto({ uri: result.uri }));
   };
 
   const chooseBackroundImage = async () => {
@@ -80,25 +78,8 @@ const EditProfile = () => {
     });
     if (result.cancelled) return;
     dispatch(pickBackgroundImage(result.uri));
+    dispatch(updateBackgroundPhoto({ uri: result.uri }));
   };
-
-  const onFormSubmit = async (values: { login: string }) => {
-    dispatch(
-      updateUser({
-        ...values,
-        profilePhotoUri: editUserState.profilePhoto,
-        backgroundPhotoUri: editUserState.backgroundPhoto,
-      })
-    );
-  };
-
-  const formik = useFormik({
-    initialValues: {
-      login: userState.userData.login,
-    },
-    validationSchema: editProfileSchema,
-    onSubmit: onFormSubmit,
-  });
 
   useFocusEffect(
     useCallback(() => {
@@ -106,7 +87,6 @@ const EditProfile = () => {
       StatusBar.setBarStyle('light-content');
     }, [])
   );
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar translucent />
@@ -126,7 +106,11 @@ const EditProfile = () => {
         <View style={{ height: height / 2, width: '100%' }}>
           <ImageBackground
             resizeMode="cover"
-            source={{ uri: editUserState.backgroundPhoto || userState.userData.backgroundPhoto }}
+            {...(editUserState.backgroundPhoto
+              ? { source: { uri: editUserState.backgroundPhoto } }
+              : userState.userData.backgroundPhotoUrl
+              ? { source: { uri: userState.userData.backgroundPhotoUrl } }
+              : { source: require('../../../assets/default-background-image.png') })}
             style={{ width: '100%', height: '100%' }}
           />
           <IconButton
@@ -149,15 +133,19 @@ const EditProfile = () => {
           }}>
           <View style={styles.profileContainer}>
             <View style={styles.profileContentContainer}>
-              <View style={{ flex: 1, alignItems: 'center' }}>
+              <View
+                style={{
+                  height: '100%',
+                  width: '100%',
+                  alignItems: 'center',
+                  justifyContent: 'flex-end',
+                }}>
                 <View style={styles.profileImageWrapper}>
                   <Image
-                    {...(editUserState.profilePhoto || userState.userData.profilePhoto
-                      ? {
-                          source: {
-                            uri: editUserState.profilePhoto || userState.userData.profilePhoto,
-                          },
-                        }
+                    {...(editUserState.profilePhoto
+                      ? { source: { uri: editUserState.profilePhoto } }
+                      : userState.userData.profilePhotoUrl
+                      ? { source: { uri: userState.userData.profilePhotoUrl } }
                       : { source: require('../../../assets/default-profile-image.png') })}
                     style={styles.profileImage}
                   />
@@ -169,30 +157,6 @@ const EditProfile = () => {
                     style={styles.editProfileImageButton}
                   />
                 </View>
-                <TextInput
-                  placeholder="Логін"
-                  placeholderTextColor="#3a2c3a"
-                  label="Логін"
-                  {...(formik.touched.login &&
-                    formik.errors.login && { subLabel: formik.errors.login, hasError: true })}
-                  selectionColor="#3a2c3a"
-                  left={
-                    <MaterialIcons
-                      name="person-outline"
-                      size={FORM_ICON_SIZE}
-                      color="#f7623c"
-                      style={styles.textInputLeft}
-                    />
-                  }
-                  value={formik.values.login}
-                  onChangeText={formik.handleChange('login')}
-                  wrapperOnLeftPress={focusTextInput}
-                  wrapperStyle={styles.textInputWrapper}
-                  labelWrapperStyle={[styles.textInputLabelWrapper, { marginTop: 50 }]}
-                  labelStyle={styles.textInputLabel}
-                  subLabelWrapperStyle={styles.textInputLabelWrapper}
-                  subLabelStyle={styles.textInputSubLabel}
-                />
                 <View style={styles.submitButtonWrapper}>
                   <Button
                     mode="contained"
@@ -200,10 +164,9 @@ const EditProfile = () => {
                     uppercase={false}
                     disabled={editUserState.loading}
                     loading={editUserState.loading}
-                    onPress={onSubmitButtonPress}
                     labelStyle={styles.submitButtonLabel}
                     style={styles.submitButton}>
-                    <Text>Зберегти</Text>
+                    <Text>Змінити пароль</Text>
                   </Button>
                 </View>
               </View>
@@ -253,6 +216,7 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     width: '95%',
+    height: '25%',
     alignItems: 'center',
     borderRadius: 30,
     backgroundColor: '#ffffff',
@@ -326,8 +290,8 @@ const styles = StyleSheet.create({
     width: '65%',
     alignItems: 'center',
     borderWidth: 3,
+    marginBottom: 55,
     borderRadius: 26,
-    marginTop: 40,
     borderColor: '#ffffff',
     backgroundColor: '#ffffff',
     elevation: 6,

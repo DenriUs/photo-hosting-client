@@ -1,8 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Photo, User } from '../../api/entities';
-import { addFavoritePhoto } from '../../api/requests/photo';
-import { loadCurrentUserData, updateUser } from '../../api/requests/user';
-import { EditUserState, UserState } from '../types';
+import { updateUser } from '../../api/requests/user';
+import { EditUserState } from '../types';
 
 const initialState: EditUserState = {
   login: '',

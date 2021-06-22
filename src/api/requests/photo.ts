@@ -5,17 +5,19 @@ import { RejectedValue } from '../types';
 import { sendGetRequest, sendPostRequest } from '../methods';
 import { ExifData } from '../../other/types';
 
-const getFileUploadFormData = (fileUri: string, body: ExifData): FormData => {
+const getFileUploadFormData = (fileUri: string, body?: ExifData): FormData => {
   const formData = new FormData();
   formData.append('photo', {
     uri: fileUri,
     type: mime.getType(fileUri),
     name: fileUri.split('/').pop(),
   });
-  Object.keys(body).forEach((key) => {
-    //@ts-ignore
-    formData.append(key, body[key]);
-  });
+  if (body) {
+    Object.keys(body).forEach((key) => {
+      //@ts-ignore
+      formData.append(key, body[key]);
+    });
+  }
   return formData;
 };
 
@@ -100,7 +102,7 @@ export const getFavoritePhotos = createAsyncThunk<any, void, { rejectValue: Reje
 export const addAccessedPhoto = createAsyncThunk<
   any,
   { userId: string; accessedPhotoId: string },
-  { rejectValue: { error: string; isServerError?: boolean; } }
+  { rejectValue: { error: string; isServerError?: boolean } }
 >('photo/addAccessed', async (data, { rejectWithValue }) => {
   const response = await sendPostRequest('/photo/addAccessed', data);
   if (response.error) {
@@ -132,6 +134,46 @@ export const updatePhoto = createAsyncThunk<
   { rejectValue: RejectedValue }
 >('photo/update', async (data, { rejectWithValue }) => {
   const response = await sendPostRequest('/photo/update', data);
+  if (response.error) {
+    return rejectWithValue({
+      error: response.error.message,
+      isServerError: response.error.isServerError,
+    });
+  }
+  return response.data;
+});
+
+export const updateProfilePhoto = createAsyncThunk<
+  any,
+  { uri: string },
+  { rejectValue: RejectedValue }
+>('photo/updateProfilePhoto', async ({ uri }, { rejectWithValue }) => {
+  const response = await sendPostRequest('/photo/updateProfilePhoto', getFileUploadFormData(uri), {
+    Accept: 'application/json',
+    'Content-Type': 'multipart/form-data',
+  });
+  if (response.error) {
+    return rejectWithValue({
+      error: response.error.message,
+      isServerError: response.error.isServerError,
+    });
+  }
+  return response.data;
+});
+
+export const updateBackgroundPhoto = createAsyncThunk<
+  any,
+  { uri: string },
+  { rejectValue: RejectedValue }
+>('photo/updateBackgroundPhoto', async ({ uri }, { rejectWithValue }) => {
+  const response = await sendPostRequest(
+    '/photo/updateBackgroundPhoto',
+    getFileUploadFormData(uri),
+    {
+      Accept: 'application/json',
+      'Content-Type': 'multipart/form-data',
+    }
+  );
   if (response.error) {
     return rejectWithValue({
       error: response.error.message,

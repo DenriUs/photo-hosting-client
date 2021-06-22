@@ -12,7 +12,7 @@ import { loadCurrentUserData } from '../api/requests/user';
 import LocationPickerMap from '../screens/main/LocationPIckerMap';
 import EditProfile from '../screens/main/EditProfile';
 import SearchUsers from '../screens/main/SearchUsers';
-import ChatScreen from '../screens/main/Chat';
+import Comments from '../screens/main/Comments';
 
 const AppStack = createStackNavigator();
 
@@ -49,7 +49,7 @@ const RootNavigator = () => {
               <AppStack.Screen name="EditProfile" component={EditProfile} />
               <AppStack.Screen name="PhotoCarousel" component={PhotoCarousel} />
               <AppStack.Screen name="SearchUsers" component={SearchUsers} />
-              <AppStack.Screen name="Chat" component={ChatScreen} />
+              <AppStack.Screen name="Comments" component={Comments} />
               <AppStack.Screen name="LocationPickerMap" component={LocationPickerMap} />
             </>
           )}

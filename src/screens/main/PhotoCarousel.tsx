@@ -37,9 +37,10 @@ const PhotoCarousel = () => {
   });
   const viewConfigRef = React.useRef({ viewAreaCoveragePercentThreshold: 50 });
 
-  const currentUserId = useAppSelector((state) => state.user.userData.id);
+  const currentUserId = useAppSelector((state) => state.user.userData._id);
   const favoritePhotoIds = useAppSelector((state) => state.user.userData.favoritePhotoIds);
   const loadedPhotos = useAppSelector((state) => state.photoCarousel.loadedPhotos);
+  const ownPhotos = useAppSelector((state) => state.photo.ownPhotos);
   const openedPhotoIndex = useAppSelector((state) => state.photoCarousel.openedPhotoIndex);
   const currentlyViewedPhoto = useAppSelector((state) => state.photoCarousel.currentlyViewedPhoto);
   const carouselMode = useAppSelector((state) => state.photoCarousel.carouselMode);
@@ -107,7 +108,7 @@ const PhotoCarousel = () => {
   };
 
   const onCommentButtonPress = () => {
-    navigation.navigate('Chat');
+    navigation.navigate('Comments');
   };
 
   useFocusEffect(
@@ -224,7 +225,8 @@ const PhotoCarousel = () => {
           ) : (
             <Appbar.Action icon="star-outline" color="#ffffff" onPress={onFavoriteButtonPress} />
           )}
-          {carouselMode === 'OWN' && (
+          {(carouselMode === 'OWN' ||
+            ownPhotos.findIndex((photo) => photo._id === currentlyViewedPhoto?._id)) !== -1 && (
             <Appbar.Action icon="share" color="#ffffff" onPress={onShareButtonPress} />
           )}
           <Appbar.Action icon="dots-vertical" color="#ffffff" onPress={onDetailsButtonPress} />

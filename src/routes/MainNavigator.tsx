@@ -17,7 +17,7 @@ const MainNavigator = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!userState.userData.id) {
+    if (!userState.userData._id) {
       dispatch(loadCurrentUserData());
     }
   }, []);

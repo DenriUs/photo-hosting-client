@@ -48,6 +48,7 @@ export interface UserState {
   hasLoadAttempt: boolean;
   userData: User;
   loading: boolean;
+  profilePhotoUpdating: boolean;
   lastResponseStatus: ResponseStatusState;
 }
 
