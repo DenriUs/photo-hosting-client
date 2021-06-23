@@ -9,10 +9,11 @@ import {
   GestureResponderEvent,
   TextInput as RNTextInput,
   useWindowDimensions,
+  Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { Button, IconButton } from 'react-native-paper';
+import { useFocusEffect, useNavigation, useNavigationState } from '@react-navigation/native';
+import { Appbar, Button, IconButton } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { FORM_ICON_SIZE } from '../../other/constants';
@@ -25,7 +26,6 @@ import {
   pickBackgroundImage,
   cleanUpLastResponseStatus,
 } from '../../redux/slices/editUserSlice';
-import { updateUser } from '../../api/requests/user';
 import SuccessModal from '../../components/modals/SuccessModal';
 import ErrorModal from '../../components/modals/ErrorModal';
 import { updateBackgroundPhoto, updateProfilePhoto } from '../../api/requests/photo';
@@ -36,7 +36,9 @@ const EditProfile = () => {
   const userState = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
 
-  const { height } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+
+  const navigation = useNavigation();
 
   const checkMediaLibraryPermission = async () => {
     const { granted } = await ImagePicker.getCameraPermissionsAsync();
@@ -46,6 +48,10 @@ const EditProfile = () => {
     }
     return true;
   };
+
+  const onHeaderBackActionPress = () => {
+    navigation.goBack();
+  }
 
   const closeModal = () => {
     dispatch(cleanUpLastResponseStatus());
@@ -155,18 +161,15 @@ const EditProfile = () => {
                     style={styles.editProfileImageButton}
                   />
                 </View>
-                <View style={styles.submitButtonWrapper}>
-                  <Button
-                    mode="contained"
-                    color="#3a2c3a"
-                    uppercase={false}
-                    disabled={editUserState.loading}
-                    loading={editUserState.loading}
-                    labelStyle={styles.submitButtonLabel}
-                    style={styles.submitButton}>
-                    <Text>Змінити пароль</Text>
-                  </Button>
-                </View>
+                <Button
+                  uppercase={false}
+                  color="#3a2c3a"
+                  onPress={() => navigation.goBack()}
+                  labelStyle={{ letterSpacing: 0.5, fontSize: 16 }}
+                  style={{ width: '96%', marginTop: 20, borderRadius: 80 }}
+                >
+                  <Text>Назад</Text>
+                </Button>
               </View>
             </View>
           </View>
@@ -214,7 +217,7 @@ const styles = StyleSheet.create({
   },
   profileContainer: {
     width: '95%',
-    height: '25%',
+    height: 150,
     alignItems: 'center',
     borderRadius: 30,
     backgroundColor: '#ffffff',
@@ -288,7 +291,7 @@ const styles = StyleSheet.create({
     width: '65%',
     alignItems: 'center',
     borderWidth: 3,
-    marginBottom: 55,
+    marginBottom: 5,
     borderRadius: 26,
     borderColor: '#ffffff',
     backgroundColor: '#ffffff',

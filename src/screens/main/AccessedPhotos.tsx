@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Image, TouchableNativeFeedback } from 'react-native';
+import { View, StyleSheet, useWindowDimensions, TouchableOpacity, Image } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import {
@@ -10,7 +10,6 @@ import {
 } from '../../redux/slices/photoCarouselSlice';
 import { getAccessedPhotos } from '../../api/requests/photo';
 import { useFocusEffect } from '@react-navigation/native';
-import { TouchableRipple } from 'react-native-paper';
 
 const AccessedPhotos = () => {
   const areAccessedPhotosLoaded = useAppSelector((state) => state.photo.areAccessedPhotosLoaded);
@@ -23,8 +22,7 @@ const AccessedPhotos = () => {
 
   const renderItem = useCallback(
     ({ item }) => (
-      <TouchableRipple
-        rippleColor="rgba(0, 0, 0, .32)"
+      <TouchableOpacity
         onPress={() => {
           dispatch(loadPhotos(data));
           dispatch(changeCurrentlyViwedPhoto(data[item.index]));
@@ -37,7 +35,7 @@ const AccessedPhotos = () => {
             style={{ width: width / 3, height: width / 3 }}
           />
         </View>
-      </TouchableRipple>
+      </TouchableOpacity>
     ),
     [areAccessedPhotosLoaded, accessedPhotos]
   );

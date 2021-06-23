@@ -6,6 +6,7 @@ import { addComment, loadComments } from '../../api/requests/comments';
 
 const initialState: CommentState = {
   comments: [],
+  commentSending: false,
   loading: false,
   lastResponseStatus: {
     success: {
@@ -41,21 +42,26 @@ const commentSlice = createSlice({
       }
     });
     builder.addCase(addComment.fulfilled, (state, action: PayloadAction<Comment>) => {
-      state.loading = false;
+      state.commentSending = false;
       state.lastResponseStatus.success.isRequestResult = true;
       state.comments.push(action.payload);
     });
+    builder.addCase(loadComments.pending, (state) => {
+      dropLastResponseStatus(state);
+      state.loading = true;
+    });
+    builder.addCase(addComment.pending, (state) => {
+      dropLastResponseStatus(state);
+      state.commentSending = true;
+    });
     builder.addMatcher(isAnyOf(loadComments.rejected, addComment.rejected), (state, action) => {
       state.loading = false;
+      state.commentSending = false;
       state.lastResponseStatus.error.isRequestResult = true;
       if (action.payload) {
         state.lastResponseStatus.error.message = action.payload.error;
         state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
       }
-    });
-    builder.addMatcher(isAnyOf(loadComments.pending, addComment.pending), (state) => {
-      dropLastResponseStatus(state);
-      state.loading = true;
     });
   }
 });

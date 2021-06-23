@@ -143,15 +143,15 @@ const Comments = () => {
             alignSelf: 'flex-end',
             bottom: 7,
           }}>
-          {commentState.loading ? (
-            <ActivityIndicator color='#f7623c' />
+          {commentState.commentSending ? (
+            <ActivityIndicator color='#f7623c' style={{ marginRight: 20, bottom: 10 }} />
           ) : (
             <IconButton
               icon='send'
               size={27}
               color='#f7623c'
               onPress={() => {
-                if (currentlyViewedPhoto) {
+                if (currentlyViewedPhoto && textInputValue) {
                   const comment = {
                     authorId: currentUserData._id,
                     photoId: currentlyViewedPhoto._id,
@@ -159,6 +159,7 @@ const Comments = () => {
                     text: textInputValue,
                   };
                   dispatch(addComment(comment));
+                  setTextInputValue('');
                 }
               }}
             />

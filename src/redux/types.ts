@@ -102,6 +102,7 @@ export interface ShareWithUsersState {
 
 export interface CommentState {
   comments: Comment[];
+  commentSending: boolean;
   loading: boolean;
   lastResponseStatus: ResponseStatusState;
 }

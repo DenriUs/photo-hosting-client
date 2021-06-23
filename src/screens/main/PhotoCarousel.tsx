@@ -196,7 +196,8 @@ const PhotoCarousel = () => {
         </View>
       )}
       {(!currentlyViewedPhoto?.latitude || !currentlyViewedPhoto?.longitude) &&
-        carouselMode === 'OWN' && (
+        (carouselMode === 'OWN' ||
+          ownPhotos.findIndex((photo) => photo._id === currentlyViewedPhoto?._id)) !== -1 && (
           <Button
             icon="map-marker-outline"
             uppercase={false}

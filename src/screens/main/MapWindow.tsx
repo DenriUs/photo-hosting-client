@@ -5,13 +5,18 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Svg, Image as ImageSVG } from 'react-native-svg';
 import { useSafeAreaFrame } from 'react-native-safe-area-context';
-import { RadioButton, IconButton, Title, Divider } from 'react-native-paper';
+import { RadioButton, IconButton, Title, Divider, Button } from 'react-native-paper';
 import Modal from 'react-native-modal';
 import Constants from 'expo-constants';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { getAccessedPhotos, getFavoritePhotos, getOwnPhotos } from '../../api/requests/photo';
 import LoadingScreen from '../other/LoadingScreen';
-import { changeCarouselMode, changeCurrentlyViwedPhoto, loadPhotos, openPhotoCarousel } from '../../redux/slices/photoCarouselSlice';
+import {
+  changeCarouselMode,
+  changeCurrentlyViwedPhoto,
+  loadPhotos,
+  openPhotoCarousel,
+} from '../../redux/slices/photoCarouselSlice';
 import {
   changeMapMode,
   changePhotosType,
@@ -104,7 +109,7 @@ const MapWindow = () => {
 
   useEffect(() => {
     dispatch(changeCarouselMode(mapState.photosType));
-  }, [mapState.photosType])
+  }, [mapState.photosType]);
 
   useEffect(() => {
     if (ownPhotos.length === 0) {
@@ -163,7 +168,6 @@ const MapWindow = () => {
           <View
             style={{
               width: '100%',
-              height: '40%',
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: 10,
@@ -171,7 +175,6 @@ const MapWindow = () => {
             }}>
             <View
               style={{
-                height: '50%',
                 width: '100%',
                 alignItems: 'center',
                 justifyContent: 'flex-start',
@@ -207,7 +210,6 @@ const MapWindow = () => {
             <Divider style={{ width: '100%' }} />
             <View
               style={{
-                height: '50%',
                 width: '100%',
                 alignItems: 'center',
                 justifyContent: 'flex-start',
@@ -248,6 +250,15 @@ const MapWindow = () => {
                   />
                 </View>
               </View>
+              <Button
+                uppercase={false}
+                color="#3a2c3a"
+                onPress={() => dispatch(toggleMapOptions(false))}
+                labelStyle={{ letterSpacing: 0.5, fontSize: 16 }}
+                style={{ width: '100%', marginTop: 20, borderRadius: 10 }}
+              >
+                <Text>Закрити</Text>
+              </Button>
             </View>
           </View>
         </Modal>
