@@ -1,8 +1,8 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import { CommentState, PhotoCarouselState, PhotosType } from '../types';
 import { Comment, Photo } from '../../api/entities';
 import { addAccessedPhoto } from '../../api/requests/photo';
-import { loadComments } from '../../api/requests/comments';
+import { addComment, loadComments } from '../../api/requests/comments';
 
 const initialState: CommentState = {
   comments: [],
@@ -36,9 +36,16 @@ const commentSlice = createSlice({
     builder.addCase(loadComments.fulfilled, (state, action: PayloadAction<Comment[]>) => {
       state.loading = false;
       state.lastResponseStatus.success.isRequestResult = true;
-      state.comments = action.payload;
+      if (action.payload) {
+        state.comments = action.payload;
+      }
     });
-    builder.addCase(loadComments.rejected, (state, action) => {
+    builder.addCase(addComment.fulfilled, (state, action: PayloadAction<Comment>) => {
+      state.loading = false;
+      state.lastResponseStatus.success.isRequestResult = true;
+      state.comments.push(action.payload);
+    });
+    builder.addMatcher(isAnyOf(loadComments.rejected, addComment.rejected), (state, action) => {
       state.loading = false;
       state.lastResponseStatus.error.isRequestResult = true;
       if (action.payload) {
@@ -46,9 +53,9 @@ const commentSlice = createSlice({
         state.lastResponseStatus.error.isServerError = action.payload.isServerError || false;
       }
     });
-    builder.addCase(loadComments.pending, (state) => {
+    builder.addMatcher(isAnyOf(loadComments.pending, addComment.pending), (state) => {
       dropLastResponseStatus(state);
-      state.loading = false;
+      state.loading = true;
     });
   }
 });

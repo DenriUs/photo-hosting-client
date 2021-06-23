@@ -14,7 +14,7 @@ export const jwtAsyncStorageKeyName = 'jwt';
 export const maxProfileLoginLength = 25;
 export const maxProfileEmailLength = 30;
 
-const serverURL = 'https://9cbe95c1efa3.ngrok.io';
+const serverURL = 'https://4d725a2eef0e.ngrok.io';
 const axiosTimeoutSeconds = 20;
 
 export const mainAxiosRequestConfig: AxiosRequestConfig = {

@@ -31,6 +31,6 @@ export interface Comment {
   id: string;
   creationDate: string;
   text: string;
-  photoId: Photo;
+  photoId: string;
   authorId: User;
 }

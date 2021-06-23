@@ -1,8 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useCallback } from 'react';
+import moment from 'moment';
+import React, { useEffect, useCallback, useRef } from 'react';
 import { useState } from 'react';
 import { FlatList, StyleSheet, Text, View, Image, TextInput, RefreshControl } from 'react-native';
-import { Appbar, IconButton, TouchableRipple } from 'react-native-paper';
+import { ActivityIndicator, Appbar, IconButton, TouchableRipple } from 'react-native-paper';
+import { Comment } from '../../api/entities';
 import { addComment, loadComments } from '../../api/requests/comments';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { sendComment } from '../../redux/slices/commentSlice';
@@ -14,15 +16,28 @@ const Comments = () => {
 
   const commentState = useAppSelector((state) => state.comment);
   const currentlyViewedPhoto = useAppSelector((state) => state.photoCarousel.currentlyViewedPhoto);
-  const currentUserId = useAppSelector((state) => state.user.userData._id);
+  const currentUserData = useAppSelector((state) => state.user.userData);
 
   const dispatch = useAppDispatch();
+
+  const flatListRef = useRef<FlatList>(null);
+
+  const getItemLayout = (_data: Comment[] | null | undefined, index: number) => ({
+    length: 85,
+    offset: 85 * index,
+    index,
+  });
 
   useEffect(() => {
     if (currentlyViewedPhoto) {
       dispatch(loadComments({ photoId: currentlyViewedPhoto._id }));
     }
   }, []);
+
+  useEffect(() => {
+    if (!flatListRef.current || !commentState.comments.length) return;
+    flatListRef.current.scrollToEnd();
+  }, [commentState.comments]);
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -40,28 +55,28 @@ const Comments = () => {
           <View style={styles.profileImageWrapper}>
             <Image
               {...(item.authorId.profilePhotoUrl
-                ? { source: { uri: item.profilePhotoUrl } }
+                ? { source: { uri: item.authorId.profilePhotoUrl } }
                 : { source: require('../../../assets/default-profile-image.png') })}
               style={styles.profileImage}
             />
           </View>
           <View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row' }}>
               <Text style={{ marginLeft: 10, fontSize: 13, fontWeight: 'bold' }}>
                 {item.authorId.login}
               </Text>
-              <Text style={{ marginLeft: 5, fontSize: 12 }}>{item.text}</Text>
+              <Text style={{ marginLeft: 5, fontSize: 12, flexShrink: 1 }}>{item.text}</Text>
             </View>
             <View>
               <Text style={{ marginLeft: 10, fontSize: 12, fontWeight: 'bold', color: 'grey' }}>
-                {item.creationDate}
+                {moment(item.creationDate).locale('uk').fromNow()}
               </Text>
             </View>
           </View>
         </View>
       </TouchableRipple>
     ),
-    []
+    [commentState.comments]
   );
 
   return (
@@ -76,9 +91,12 @@ const Comments = () => {
         <Appbar.Content title="Коментарі" />
       </Appbar.Header>
       <FlatList
+        ref={flatListRef}
         data={commentState.comments}
         keyExtractor={(_, index) => index.toString()}
         renderItem={renderItem}
+        getItemLayout={getItemLayout}
+        initialNumToRender={30}
         refreshControl={
           <RefreshControl
             refreshing={commentState.loading}
@@ -99,9 +117,11 @@ const Comments = () => {
             { position: 'absolute', alignSelf: 'flex-end', marginLeft: 10, bottom: 12 },
           ]}>
           <Image
-            source={{ uri: `https://picsum.photos/400/400?random=1}` }}
-            style={styles.profileImage}
-          />
+              {...(currentUserData.profilePhotoUrl
+                ? { source: { uri: currentUserData.profilePhotoUrl } }
+                : { source: require('../../../assets/default-profile-image.png') })}
+              style={styles.profileImage}
+            />
         </View>
         <View style={{ width: '100%', alignItems: 'center' }}>
           <TextInput
@@ -123,23 +143,26 @@ const Comments = () => {
             alignSelf: 'flex-end',
             bottom: 7,
           }}>
-          <IconButton
-            icon="send"
-            size={27}
-            color="#f7623c"
-            onPress={() => {
-              if (currentlyViewedPhoto) {
-                const comment = {
-                  authorId: currentUserId,
-                  photoId: currentlyViewedPhoto._id,
-                  creationDate: new Date().toISOString(),
-                  text: textInputValue,
-                };
-                dispatch(addComment(comment));
-                dispatch(sendComment(comment));
-              }
-            }}
-          />
+          {commentState.loading ? (
+            <ActivityIndicator color='#f7623c' />
+          ) : (
+            <IconButton
+              icon='send'
+              size={27}
+              color='#f7623c'
+              onPress={() => {
+                if (currentlyViewedPhoto) {
+                  const comment = {
+                    authorId: currentUserData._id,
+                    photoId: currentlyViewedPhoto._id,
+                    creationDate: new Date().toISOString(),
+                    text: textInputValue,
+                  };
+                  dispatch(addComment(comment));
+                }
+              }}
+            />
+          )}
         </View>
       </View>
     </View>

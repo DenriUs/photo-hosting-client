@@ -26,3 +26,8 @@ export const resetCodeSchema = yup.object({
 export const newPasswordSchema = yup.object({
   newPassword: yup.string().required('Введіть пароль').min(8, 'Мінімум 8 символів'),
 });
+
+export const changePassword = yup.object({
+  oldPassword: yup.string().required('Введіть старий пароль').max(35),
+  newPassword: yup.string().required('Введіть новий пароль').max(35),
+});

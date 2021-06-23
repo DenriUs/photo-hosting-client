@@ -71,12 +71,10 @@ const userSlice = createSlice({
     });
     builder.addCase(updateProfilePhoto.fulfilled, (state, action: PayloadAction<User>) => {
       state.profilePhotoUpdating = false;
-      console.log(state.userData.profilePhotoUrl, action.payload.profilePhotoUrl);
       state.userData.profilePhotoUrl = action.payload.profilePhotoUrl;
     }),
       builder.addCase(updateBackgroundPhoto.fulfilled, (state, action: PayloadAction<User>) => {
         state.profilePhotoUpdating = false;
-        console.log(state.userData.backgroundPhotoUrl, action.payload.backgroundPhotoUrl);
         state.userData.backgroundPhotoUrl = action.payload.backgroundPhotoUrl;
       }),
       builder.addCase(addFavoritePhoto.rejected, (state, action) => {

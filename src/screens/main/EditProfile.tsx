@@ -29,6 +29,7 @@ import { updateUser } from '../../api/requests/user';
 import SuccessModal from '../../components/modals/SuccessModal';
 import ErrorModal from '../../components/modals/ErrorModal';
 import { updateBackgroundPhoto, updateProfilePhoto } from '../../api/requests/photo';
+import LoadingScreen from '../other/LoadingScreen';
 
 const EditProfile = () => {
   const editUserState = useAppSelector((state) => state.editUser);
@@ -36,9 +37,6 @@ const EditProfile = () => {
   const dispatch = useAppDispatch();
 
   const { height } = useWindowDimensions();
-
-  const focusTextInput = (_event: GestureResponderEvent, textInputRef: RefObject<RNTextInput>) =>
-    textInputRef.current?.focus();
 
   const checkMediaLibraryPermission = async () => {
     const { granted } = await ImagePicker.getCameraPermissionsAsync();
@@ -87,7 +85,7 @@ const EditProfile = () => {
       StatusBar.setBarStyle('light-content');
     }, [])
   );
-  return (
+  return userState.profilePhotoUpdating ? <LoadingScreen /> : (
     <SafeAreaView style={styles.container}>
       <StatusBar translucent />
       <SuccessModal
